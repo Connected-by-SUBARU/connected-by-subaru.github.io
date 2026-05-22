@@ -91,11 +91,11 @@
     {
       "id": "default-member-1",
       "name": "四本瑞樹 (青山学院大)",
-      "role": "Representative Candidate / Developer",
+      "role": "member",
       "photo": "四",
       "comment": "",
       "year": "2026",
-      "category": "代表・開発"
+      "category": "メンバー"
     },
     {
       "id": "default-member-2",
