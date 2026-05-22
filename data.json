@@ -17,6 +17,15 @@
   ],
   "events": [
     {
+      "id": "cbs_events_1779456101877",
+      "title": "テスト用",
+      "date": "テスト",
+      "location": "テスト",
+      "status": "準備中",
+      "desc": "test",
+      "content": ""
+    },
+    {
       "id": "default-event-1",
       "title": "🌟 夏のオンライン観望会",
       "date": "2026年7月11日（土）20:00 〜 21:30",
@@ -142,5 +151,8 @@
       "year": "2026",
       "category": "企画・広報"
     }
-  ]
+  ],
+  "wiki_content": "",
+  "wiki_notes": {},
+  "wiki_history": []
 }
