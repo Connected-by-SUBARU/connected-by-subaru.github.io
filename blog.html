@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog (すばる体験日記) | Connected by SUBARU(CbS)</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo"><a href="index.html">Connected by SUBARU(CbS)</a></div>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="monthly.html">今月のすばる</a></li>
+                <li><a href="events.html">イベント告知</a></li>
+                <li><a href="maunakea.html">マウナケア便り</a></li>
+                <li><a href="members.html">メンバー紹介</a></li>
+                <li><a href="media.html">メディア・ライブ</a></li>
+                <li><a href="wiki.html" style="color: #fca311; font-weight: bold;">Wiki(限定)</a></li>
+                <li><a href="index.html#join">お問い合わせ</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="page-header bg-dark">
+        <h1>Blog (すばる体験日記)</h1>
+        <p>サークルメンバーによる体験談や活動記録</p>
+    </section>
+
+    <section class="section">
+        <div id="dynamic-article-list" class="article-list" style="max-width: 800px; margin: 0 auto; text-align: left;">
+            <!-- JavaScriptで描画します -->
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-sns">
+            <a href="https://x.com" target="_blank">X (旧Twitter)</a>
+            <a href="https://instagram.com" target="_blank">Instagram</a>
+            <a href="media.html">YouTube / ライブ中継</a>
+            <a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;">(管理者ログイン)</a>
+        </div>
+        <p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.</p>
+        <p><small>※当サークルは国立天文台を応援する有志のボランティアサークルです。</small></p>
+    </footer>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const defaultBlogs = [
+            { 
+                id: "default-blog-1", 
+                date: "2026年5月18日", 
+                title: "すばる望遠鏡体験企画に参加してわかった、“研究の現場”のリアル", 
+                summary: "「すばる望遠鏡」と聞くと、宇宙の美しい写真や最先端の天文学研究を思い浮かべる人が多いかもしれません。ですが、実際に現地へ...", 
+                content: "blog-article.html" 
+            }
+        ];
+
+        // wiki.htmlと同様のキャッシュ強制クリア・自動リロード用バージョンキー
+        const VERSION_KEY = "cbs_site_version";
+        const CURRENT_VERSION = "2026_v9";
+
+        const storedVersion = localStorage.getItem(VERSION_KEY);
+        if (storedVersion !== CURRENT_VERSION) {
+            localStorage.setItem('cbs_blog_posts', JSON.stringify(defaultBlogs));
+            localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+            location.reload();
+            return;
+        }
+
+        if (!localStorage.getItem('cbs_blog_posts')) {
+            localStorage.setItem('cbs_blog_posts', JSON.stringify(defaultBlogs));
+        }
+
+        let blogPosts = [];
+        try {
+            blogPosts = JSON.parse(localStorage.getItem('cbs_blog_posts')) || [];
+        } catch (e) {
+            blogPosts = defaultBlogs;
+        }
+
+        const container = document.getElementById("dynamic-article-list");
+        container.innerHTML = ""; 
+
+        blogPosts.forEach(post => {
+            const article = document.createElement("article");
+            article.style.background = "#fff";
+            article.style.padding = "20px";
+            article.style.borderRadius = "8px";
+            article.style.marginBottom = "20px";
+            article.style.boxShadow = "0 4px 6px rgba(0,0,0,0.05)";
+
+            const postLink = post.content || "#";
+
+            article.innerHTML = `
+                <span style="color: #888; font-size: 0.9rem;">${post.date}</span>
+                <h3 style="margin: 10px 0; color: #0b132b;">${post.title}</h3>
+                <p>${post.summary}</p>
+                <a href="${postLink}" style="color: #fca311; text-decoration: none; font-weight: bold; margin-top: 10px; display: inline-block;">続きを読む →</a>
+            `;
+            container.appendChild(article);
+        });
+
+        // 他のタブでの変更（admin.htmlでのブログ更新など）を検知して自動リロードする仕組み
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'cbs_blog_posts' || e.key === VERSION_KEY) {
+                location.reload();
+            }
+        });
+    });
+    </script>
+</body>
+</html>
