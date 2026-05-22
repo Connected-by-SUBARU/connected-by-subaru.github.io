@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メンバー紹介 | Connected by SUBARU(CbS)</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo"><a href="index.html">Connected by SUBARU(CbS)</a></div>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="monthly.html">今月のすばる</a></li>
+                <li><a href="events.html">イベント告知</a></li>
+                <li><a href="maunakea.html">マウナケア便り</a></li>
+                <li><a href="members.html">メンバー紹介</a></li>
+                <li><a href="media.html">メディア・ライブ</a></li>
+                <li><a href="wiki.html" style="color: #fca311; font-weight: bold;">Wiki(限定)</a></li>
+                <li><a href="index.html#join">お問い合わせ</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="page-header bg-dark">
+        <h1>Members</h1>
+        <p>すばる望遠鏡の魅力を伝えるため、多彩な専門性を持った有志メンバーが活動しています。</p>
+    </section>
+
+    <section class="section">
+        <div id="members-grid" class="member-grid">
+            <!-- JavaScriptにて動的挿入 -->
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-sns">
+            <a href="https://x.com" target="_blank">X (旧Twitter)</a>
+            <a href="https://instagram.com" target="_blank">Instagram</a>
+            <a href="media.html">YouTube / ライブ中継</a>
+            <a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;">(管理者ログイン)</a>
+        </div>
+        <p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.</p>
+        <p><small>※当サークルは国立天文台を応援する有志のボランティアサークルです。</small></p>
+    </footer>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const defaultMembers = [
+            { id: "default-member-1", name: "四本瑞樹 (青山学院大)", role: "member", photo: "四", comment: "", year: "2026", category: "メンバー" },
+            { id: "default-member-2", name: "横山史織 (日大)", role: "member", photo: "横", comment: "", year: "2026", category: "メンバー" },
+            { id: "default-member-3", name: "髙橋恵吾 (東北大)", role: "member", photo: "髙", comment: "", year: "2026", category: "メンバー" },
+            { id: "default-member-4", name: "落合優名 (琉球大)", role: "member", photo: "落", comment: "", year: "2026", category: "メンバー" },
+            { id: "default-member-5", name: "川田匠人 (鹿児島大)", role: "member", photo: "川", comment: "", year: "2026", category: "メンバー" },
+            { id: "default-member-6", name: "高森碧 (京都産業大)", role: "member", photo: "高", comment: "", year: "2026", category: "メンバー" }
+        ];
+
+        // 同期用キー
+        const VERSION_KEY = "cbs_site_version";
+        const CURRENT_VERSION = "2026_v14";
+
+        const storedVersion = localStorage.getItem(VERSION_KEY);
+        if (storedVersion !== CURRENT_VERSION) {
+            localStorage.setItem('cbs_members_posts', JSON.stringify(defaultMembers));
+            localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+            location.reload();
+            return;
+        }
+
+        if (!localStorage.getItem('cbs_members_posts')) {
+            localStorage.setItem('cbs_members_posts', JSON.stringify(defaultMembers));
+        }
+
+        let membersList = [];
+        try {
+            membersList = JSON.parse(localStorage.getItem('cbs_members_posts'));
+        } catch (e) {
+            membersList = defaultMembers;
+        }
+
+        const container = document.getElementById("members-grid");
+        container.innerHTML = "";
+
+        membersList.forEach(mem => {
+            const card = document.createElement("div");
+            card.className = "member-card";
+
+            const commentHTML = mem.comment.trim() 
+                ? `<p class="member-comment" style="white-space: pre-wrap; margin-top: 15px; border-top: 1px dashed #eee; padding-top: 10px;">${mem.comment}</p>` 
+                : '';
+
+            // 加入年度およびカテゴリ情報がある場合に表示するHTML文字列を生成
+            const yearCategoryHTML = (mem.year || mem.category)
+                ? `<div style="font-size: 0.75rem; color: #7f8c8d; margin-bottom: 8px; font-weight: bold;">
+                    ${mem.year ? mem.year + '年度加入' : ''} ${mem.year && mem.category ? '|' : ''} ${mem.category || ''}
+                   </div>`
+                : '';
+
+            card.innerHTML = `
+                <div class="member-photo">${mem.photo}</div>
+                ${yearCategoryHTML}
+                <div class="member-role">${mem.role}</div>
+                <h3 class="member-name">${mem.name}</h3>
+                ${commentHTML}
+            `;
+            container.appendChild(card);
+        });
+
+        // 他のタブでのメンバー情報やシステムバージョン変更を検知して自動リロード
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'cbs_members_posts' || e.key === VERSION_KEY) {
+                location.reload();
+            }
+        });
+    });
+    </script>
+</body>
+</html>
