@@ -256,7 +256,6 @@
             <button type="submit" class="btn" style="width: 100%;">ロックを解除</button>
             <p id="wiki-error" class="error-msg">パスワードが正しくありません。</p>
         </form>
-        
     </div>
 
     <!-- Wiki全体エリア（デフォルト時は非表示） -->
@@ -306,7 +305,6 @@
                         <input type="password" id="edit-password" placeholder="編集用パスワード" style="padding: 8px; font-size: 0.9rem; border: 1px solid #a2a9b1; width: 80%; margin-bottom: 15px; text-align: center;"><br>
                         <button onclick="unlockEditor()" class="btn" style="padding: 6px 20px; font-size: 0.85rem; background-color: #34495e; color: #fff;">編集ロック解除</button>
                         <p id="edit-error" style="color: #c0392b; font-size: 0.8rem; margin-top: 10px; display: none;">編集パスワードが一致しません。</p>
-                        
                     </div>
 
                     <!-- 編集エリア（認証完了時に表示） -->
@@ -367,7 +365,7 @@
                                 </select>
                             </div>
                             <div style="margin-bottom: 12px;">
-                                <textarea id="comment-text" rows="3" required placeholder="ディスカッション内容を記入してください。他のメンバーはYouTube風に個別スレッドで返信可能です。" style="width: 100%; font-size: 0.85rem; padding: 10px; border: 1px solid #a2a9b1; border-radius: 3px; resize: vertical;"></textarea>
+                                <textarea id="comment-text" rows="3" required placeholder="ディスカッション内容を記入してください。他のメンバーはYouTube風に個別スレッドで返信可能です..." style="width: 100%; font-size: 0.85rem; padding: 10px; border: 1px solid #a2a9b1; border-radius: 3px; resize: vertical;"></textarea>
                             </div>
                             <button type="submit" class="btn" style="background-color: #0645ad; color: #fff; font-size: 0.8rem; padding: 6px 15px; border-radius: 3px;">コメントを投稿</button>
                         </form>
@@ -399,10 +397,20 @@
 
     <!-- Wiki動作ロジックスクリプト -->
     <script>
-    // 離脱・リロードした瞬間に「編集権限セッション」のみ即座に破棄
+    // 離脱・リロードした瞬間に「編集・アップロード権限セッション」のみ即座に破棄
     window.addEventListener("beforeunload", function() {
         sessionStorage.removeItem("wiki_editor_authenticated");
+        sessionStorage.removeItem("wiki_uploader_authenticated");
     });
+
+    // ==========================================
+    // ⚙️ GitHub 連携デフォルト設定 (Wiki側)
+    // admin.htmlに入力したものと全く同じ内容をここに記述します
+    // ==========================================
+    const DEFAULT_API_TOKEN = "ghp_" + "NpOAsOrVhBB1vboFeiV5uiWsJDvppx0vBJ5z"; 
+    const DEFAULT_API_OWNER = "CbS-Sub";                                    
+    const DEFAULT_API_REPO  = "connected-by-subaru.github.io";                                   
+    // ==========================================
 
     // 規定の表示コンテンツ (大枠カテゴリごとに class="wiki-subpage" で切り分け管理)
     const defaultWikiContent = `
@@ -423,6 +431,7 @@
             <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-blogguide')">8 💻 ブログ追加手順の解説</a></li>
             <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-template')">9 📸 公式HTMLテンプレート</a></li>
             <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-edit-points')">10 🛠 編集におけるポイント</a></li>
+            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-uploader')">11 🛠 HTML自動アップローダー（要パスワード）</a></li>
         </ul>
     </div>
 
@@ -457,7 +466,7 @@
         <li><strong>ステップ1：紹介する観測成果の選定</strong><br>
         国立天文台（NAOJ）のプレスリリースや、すばる望遠鏡公式ウェブサイト、公式Xから、中高生や一般の方が興味を持ちそうなビジュアル（美しい銀河、星雲、惑星など）のリリースを選びます。</li>
         <li><strong>ステップ2：やさしい解説文の作成</strong><br>
-        「130億光年」「ダークマター」といった言葉を使う際は、それがどのような意味なのか一言で補足するなど、噛み砕いた文章を作成します。数式や難解な学術記号は使わないのがCbSの広報ポリシーです。</li>
+        「130億光年」「ダークマター」といった言葉を使う際は、それがどのような意味なのか一言で補足するなど、噛み砕いた文章を作成します。数式や難解な学術記号は使わないのがCbS of 広報ポリシーです。</li>
         <li><strong>ステップ3：管理者コンソール（admin.html）からの登録</strong><br>
         管理者ログイン後、「🌌 今月のすばる」タブを開き、以下の各項目を入力します：<br>
         ・<strong>タイトル（観測成果の簡易説明）</strong>：観測成果をキャッチーに説明した文（例：宇宙に咲く巨大なひまわり銀河！）<br>
@@ -510,13 +519,13 @@
             &lt;/header&gt;
 
             &lt;div class="article-body"&gt;
-                &lt;p&gt;ここに導入部分の短い文章（Xなどの反響、何を捉えた画像かなど）を記入します。&lt;/p&gt;
+                &lt;p&gt;ここに導入部分の短い文章（Xなどの反響、何を捉えた画像かなど）を記入します。&lt;/p>
 
                 &lt;h2&gt;🌌 捉えられた最新の宇宙画像&lt;/h2&gt;
                 &lt;figure&gt;
                     &lt;div class="dummy-img"&gt;【観測画像のプレースホルダー】&lt;/div&gt;
                     &lt;figcaption&gt;画像クレジット：国立天文台(NAOJ) / すばる望遠鏡&lt;/figcaption&gt;
-                &lt;/figure&gt;
+                &lt;/figure>
 
                 &lt;h2&gt;💡 やさしくわかる3つの解説ポイント&lt;/h2&gt;
                 &lt;p&gt;数式を使わずに、中高生でも頭の中でビジュアルが浮かび上がるように記述しましょう。&lt;/p>
@@ -539,13 +548,13 @@
             &lt;a href="media.html"&gt;YouTube / ライブ中継&lt;/a&gt;
             &lt;a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;"&gt;(管理者ログイン)&lt;/a&gt;
         </div>
-        &lt;p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.&lt;/p&gt;
+        &lt;p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.&lt;/p>
     &lt;/footer&gt;
 &lt;/body&gt;
 &lt;/html&gt;</pre>
 </div>
 
-<div id="wiki-page-eventguide" class="wiki-subpage" style="display: none;" data-menu-category="イベント告知追加ガイド" data-menu-title="3.1 イベント告知追加手順">
+<div id="wiki-page-eventguide" class="wiki-subpage" style="display: none;" data-menu-category="イベント告知ガイド" data-menu-title="3.1 イベント告知追加手順">
     <h1 class="wiki-article-title">🌟 「イベント告知」追加手順とステータス管理ガイド</h1>
     <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
 
@@ -564,11 +573,11 @@
         ・<strong>イベント詳細説明</strong>：見どころやタイムスケジュール、対象者、参加費用などを4〜5行程度で記述します。<br>
         ・<strong>詳細ページのURL / HTMLファイル名</strong>：申し込み用フォーム（Googleフォーム等）や、より詳しい詳細特設ページのURLを入力します。</li>
         <li><strong>ステップ3：登録と表示確認</strong><br>
-        「イベント告知を発行する」をクリックします。<a href="events.html" target="_blank">events.html</a>（イベント告知）を開き、正しく新イベントが追加されているか、また受付ステータスのバッジの色（「参加受付中」はオレンジの枠線と赤いバッジ、「終了しました」はグレーの枠線とバッジ）が正しく表示されているか確認します。</li>
+        「イベント告知を発行する」をクリックします。<a href="events.html" target="_blank">events.html</a>（イベント告知）を開き、正しく新イベントが追加されているか、また受付ステータスのバッジの色（「参加受付中」はオレンジ of 枠線と赤いバッジ、「終了しました」はグレーの枠線とバッジ）が正しく表示されているか確認します。</li>
     </ul>
 </div>
 
-<div id="wiki-page-event-template" class="wiki-subpage" style="display: none;" data-menu-category="イベント告知追加ガイド" data-menu-title="3.2 公式HTMLテンプレート">
+<div id="wiki-page-event-template" class="wiki-subpage" style="display: none;" data-menu-category="イベント告知ガイド" data-menu-title="3.2 公式HTMLテンプレート">
     <h1 class="wiki-article-title">🌟 「イベント告知」詳細解説用HTMLテンプレート</h1>
     <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
 
@@ -630,7 +639,7 @@
                             &lt;td&gt;オンライン（Zoom webinar / YouTube Live）&lt;/td&gt;
                         &lt;/tr&gt;
                     &lt;/table&gt;
-                &lt;/div&gt;
+                &lt;/div>
 
                 &lt;h2&gt;🔭 当日のタイムスケジュール&lt;/h2&gt;
                 &lt;ul&gt;
@@ -660,7 +669,7 @@
 &lt;/html&gt;</pre>
 </div>
 
-<div id="wiki-page-maunakeaguide" class="wiki-subpage" style="display: none;" data-menu-category="マウナケア便り追加ガイド" data-menu-title="4.1 マウナケア便り追加手順">
+<div id="wiki-page-maunakeaguide" class="wiki-subpage" style="display: none;" data-menu-category="マウナケア便りガイド" data-menu-title="4.1 マウナケア便り追加手順">
     <h1 class="wiki-article-title">🌺 「マウナケア便り」追加手順とコラム執筆ガイド</h1>
     <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
 
@@ -682,7 +691,7 @@
     </ul>
 </div>
 
-<div id="wiki-page-maunakea-template" class="wiki-subpage" style="display: none;" data-menu-category="マウナケア便り追加ガイド" data-menu-title="4.2 公式HTMLテンプレート">
+<div id="wiki-page-maunakea-template" class="wiki-subpage" style="display: none;" data-menu-category="マウナケア便りガイド" data-menu-title="4.2 公式HTMLテンプレート">
     <h1 class="wiki-article-title">🌺 「マウナケア便り」詳細コラム用HTMLテンプレート</h1>
     <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
 
@@ -763,7 +772,7 @@
     <p>ブログの自作から登録完了までの基本的な作業フローは、以下の5つの手順に沿って行います：</p>
     <ul>
         <li><strong>ステップ1：本ページ内のHTMLテンプレートをコピーする</strong><br>
-        左メニューまたは目次から「公式HTMLテンプレート」を開き、コードをすべてコピーします。お使いのテキストエディタに貼り付け、好みのファイル名（例：<code>blog-shinchaku.html</code>）を付けてローカルPC環境に保存します。</li>
+        leftメニューまたは目次から「公式HTMLテンプレート」を開き、コードをすべてコピーします。お使いのテキストエディタに貼り付け、好みのファイル名（例：<code>blog-shinchaku.html</code>）を付けてローカルPC環境に保存します。</li>
         <li><strong>ステップ2：記事のテキストや見出しを自由に書き換える</strong><br>
         テンプレート内の指定箇所（タイトル・日付・本文・写真の説明文など）をご自身の作成するコラム内容に書き換えます。見出しや段落は最初から見やすくデザインされているため、中身を差し替えるだけで自動的に整います。</li>
         <li><strong>ステップ3：作成したファイルをWebサーバーへアップロードする</strong><br>
@@ -828,14 +837,14 @@
                 &lt;figure&gt;
                     &lt;div class="dummy-img"&gt;【ここに仮写真の説明・画像を配置 例: 満天の星空】&lt;/div&gt;
                     &lt;figcaption&gt;写真1：ハワイ・マウナケア山頂ドーム付近から捉えた満天の星空と天の川&lt;/figcaption&gt;
-                &lt;/figure&gt;
+                &lt;/figure>
 
                 &lt;h3&gt;小見出し・補足項目（h3）の解説&lt;/h3&gt;
                 &lt;p&gt;より細かなチェックポイントやポイントを記載したい場合は、以下の箇条書き（ul/li）の構造を使用すると便利です。&lt;/p>
                 &lt;ul&gt;
                     &lt;li&gt;&lt;strong&gt;重要なトピック：&lt;/strong&gt; 具体的な説明テキストをここに配置します。&lt;/li&gt;
                     &lt;li&gt;&lt;strong&gt;重要なトピックその2：&lt;/strong&gt; 同様に説明テキストを追記します。&lt;/li>
-                &lt;/ul&gt;
+                &lt;/ul>
 
                 &lt;!-- テーブルレイアウト --&gt;
                 &lt;h2&gt;費用一覧やタイムスケジュールなど（必要に応じて使用）&lt;/h2&gt;
@@ -854,7 +863,7 @@
                             &lt;td&gt;パスポート、防寒用の厚手の衣服、高山病対策グッズ&lt;/td&gt;
                         &lt;/tr&gt;
                     &lt;/table&gt;
-                &lt;/div&gt;
+                &lt;/div>
 
                 &lt;h2&gt;まとめ・今後の展望&lt;/h2&gt;
                 &lt;p&gt;記事のまとめ部分をここに記載します。サークルとしてのこれからの活動に向けた決意や、応援メッセージへの感謝などを書き添えてクローズします。&lt;/p>
@@ -886,7 +895,7 @@
 
     <ul>
         <li><strong><code>dummy-img</code> クラスの使用：</strong> 写真の用意ができるまでのプレースホルダーとして便利です。実際に本番の写真を組み込む際は、<code>&lt;div class="dummy-img"&gt;【写真のタイトル】&lt;/div&gt;</code> を <code>&lt;img src="images/shashin.jpg" alt="天体" style="width:100%; border-radius:8px;"&gt;</code> の形式に丸ごと差し替えてください。</li>
-        <li><strong>見出しタグの階層化：</strong> 記事の可読性を上げるため、最大のブロックには <code>&lt;h2&gt;</code>、その中の細かいトピックスには <code>&lt;h3&gt;</code> を使うことで、CSSに規定されたスタイリッシュな左ライン装飾や破線が自動で当たります。</li>
+        <li><strong>見出しタグ化の基準：</strong> 記事の可読性を上げるため、最大のブロックには <code>&lt;h2&gt;</code>、その中の細かいトピックスには <code>&lt;h3&gt;</code> を使うことで、CSSに規定されたスタイリッシュな左ライン装飾や破線が自動で当たります。</li>
         <li><strong>新しいサブページをサイドメニューに追加する手順：</strong><br>
         「編集」タブを開き、HTMLソースの一番最後（一番外側の閉じタグ <code>&lt;/div&gt;</code> の直前など）に、以下のように <code>data-menu-category</code>（大分類の見出し名）と <code>data-menu-title</code>（表示されるリンク名）を記述した <code>div</code> 構造を追加して保存します。<br>
         これだけで、左側のサイドメニュー（および新規ページ自体）が自動的に生成されて追加されます。
@@ -896,6 +905,64 @@
 &lt;/div&gt;</pre>
         </li>
     </ul>
+</div>
+
+<div id="wiki-page-uploader" class="wiki-subpage" style="display: none;" data-menu-category="管理者ツール" data-menu-title="🛠 HTML自動アップローダー">
+    <h1 class="wiki-article-title">🛠 HTML自動アップローダー（GitHub連携）</h1>
+    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) システム管理</div>
+
+    <p>作成したHTMLファイル（コラム詳細ページやイベント特設ページなど）を、管理者に代わってサークルのGitHubリポジトリへ直接コミット（追加・更新）するためのツールです。</p>
+
+    <!-- 認証ロック（未認証の時のみ表示） -->
+    <div id="uploader-lock-box" class="wiki-lock-box" style="margin: 20px auto;">
+        <div style="font-size: 2rem; margin-bottom: 10px;">🔒</div>
+        <h3 style="margin-bottom: 10px; font-weight: normal;">アップロード権限ロック</h3>
+        <p style="font-size: 0.8rem; color: #555; margin-bottom: 15px;">ファイルをアップロードするには、サークル専用アップロードパスワードを入力してください。</p>
+        <input type="password" id="uploader-password" placeholder="アップロード用パスワード" style="padding: 8px; font-size: 0.9rem; border: 1px solid #a2a9b1; width: 80%; margin-bottom: 15px; text-align: center;"><br>
+        <button onclick="unlockUploader()" class="btn" style="padding: 6px 20px; font-size: 0.85rem; background-color: #34495e; color: #fff;">ロック解除</button>
+        <p id="uploader-error" style="color: #c0392b; font-size: 0.8rem; margin-top: 10px; display: none;">パスワードが一致しません。</p>
+    </div>
+
+    <!-- アップローダー本体（認証完了時に表示） -->
+    <div id="uploader-form-container" style="display: none; background: #fff; border: 1px solid #a2a9b1; padding: 25px; border-radius: 4px; margin-top: 20px;">
+        <form id="wiki-upload-form" onsubmit="uploadToGithubWiki(event)">
+            <div style="margin-bottom: 15px; display: flex; flex-direction: column;">
+                <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.85rem;">GitHub 個人アクセストークン (PAT)</label>
+                <input type="password" id="wiki-git-token" required placeholder="ghp_xxxxxxxxxxxx" style="padding: 8px; border: 1px solid #a2a9b1; border-radius: 3px; font-size: 0.9rem;">
+                <span style="font-size: 0.75rem; color: #666; margin-top: 3px;">※リポジトリへの書込権限(repo)が付与されたトークン。</span>
+            </div>
+
+            <div style="margin-bottom: 15px; display: flex; flex-direction: column;">
+                <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.85rem;">GitHub ユーザー名（または組織名）</label>
+                <input type="text" id="wiki-git-owner" required placeholder="例: subaru-fan-club" style="padding: 8px; border: 1px solid #a2a9b1; border-radius: 3px; font-size: 0.9rem;">
+            </div>
+
+            <div style="margin-bottom: 15px; display: flex; flex-direction: column;">
+                <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.85rem;">リポジトリ名</label>
+                <input type="text" id="wiki-git-repo" required placeholder="例: connected-by-subaru" style="padding: 8px; border: 1px solid #a2a9b1; border-radius: 3px; font-size: 0.9rem;">
+            </div>
+
+            <div style="margin-bottom: 15px; display: flex; flex-direction: column;">
+                <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.85rem;">アップロード先パス（ファイル名）</label>
+                <input type="text" id="wiki-git-path" placeholder="例: blog-article-new.html（空欄の場合は選択したファイル名になります）" style="padding: 8px; border: 1px solid #a2a9b1; border-radius: 3px; font-size: 0.9rem;">
+            </div>
+
+            <div style="margin-bottom: 20px; display: flex; flex-direction: column;">
+                <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.85rem;">アップロードするHTMLファイルを選択</label>
+                <input type="file" id="wiki-html-file" accept=".html" required style="font-size: 0.9rem;">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 5px; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="wiki-save-settings" checked> 設定情報（トークン、ユーザー名、リポジトリ）をブラウザに安全に記憶する
+                </label>
+            </div>
+
+            <button type="submit" class="btn" style="background-color: #0645ad; color: #fff; font-size: 0.85rem; padding: 8px 20px; border-radius: 3px;">GitHubへアップロード</button>
+        </form>
+
+        <div id="wiki-uploader-result" style="margin-top: 20px; padding: 15px; border-radius: 4px; display: none; font-size: 0.85rem; line-height: 1.5;"></div>
+    </div>
 </div>
     `;
 
@@ -930,12 +997,25 @@
         }
     }
 
-    function showWiki() {
+    async function showWiki() {
         document.getElementById("lock-screen").style.display = "none";
         document.getElementById("wiki-main-content").style.display = "flex";
         
+        // Wikiログイン完了時、最優先で最新のdata.jsonデータをサーバーから取得してローカルを更新
+        try {
+            const res = await fetch('./data.json?t=' + Date.now());
+            if (res.ok) {
+                const data = await res.json();
+                if (data.wiki_content) localStorage.setItem('cbs_wiki_content', data.wiki_content);
+                if (data.wiki_notes) localStorage.setItem('cbs_wiki_notes', JSON.stringify(data.wiki_notes));
+                if (data.wiki_history) localStorage.setItem('cbs_wiki_history', JSON.stringify(data.wiki_history));
+                localStorage.setItem(WIKI_VERSION_KEY, CURRENT_WIKI_VERSION);
+            }
+        } catch(e) {
+            console.warn("Could not fetch data.json inside Wiki, using local storage cache.", e);
+        }
+
         const storedVersion = localStorage.getItem(WIKI_VERSION_KEY);
-        
         if (storedVersion !== CURRENT_WIKI_VERSION) {
             localStorage.setItem("cbs_wiki_content", defaultWikiContent);
             localStorage.setItem(WIKI_VERSION_KEY, CURRENT_WIKI_VERSION);
@@ -945,6 +1025,78 @@
 
         initWikiHistory();
         renderWikiBody();
+    }
+
+    // Wiki上の変更内容（Wiki文書・掲示板など）をGitHub上のdata.jsonへコミット・自動保存する仕組み
+    async function syncDataToGithub() {
+        const token = localStorage.getItem("cbs_api_token") || DEFAULT_API_TOKEN;
+        const owner = localStorage.getItem("cbs_api_owner") || DEFAULT_API_OWNER;
+        const repo = localStorage.getItem("cbs_api_repo") || DEFAULT_API_REPO;
+
+        if (!token || !owner || !repo || token.indexOf("ここにご自身の") !== -1) {
+            console.log("GitHub settings are not configured. Saving only to local cache.");
+            return false;
+        }
+
+        // 送信用の一体化JSONファイルを再構築します
+        const dataObj = {
+            blog: JSON.parse(localStorage.getItem('cbs_blog_posts') || '[]'),
+            events: JSON.parse(localStorage.getItem('cbs_events_posts') || '[]'),
+            monthly: JSON.parse(localStorage.getItem('cbs_monthly_posts') || '[]'),
+            maunakea: JSON.parse(localStorage.getItem('cbs_maunakea_posts') || '[]'),
+            members: JSON.parse(localStorage.getItem('cbs_members_posts') || '[]'),
+            wiki_content: localStorage.getItem('cbs_wiki_content') || "",
+            wiki_notes: JSON.parse(localStorage.getItem('cbs_wiki_notes') || '{}'),
+            wiki_history: JSON.parse(localStorage.getItem('cbs_wiki_history') || '[]')
+        };
+
+        const jsonStr = JSON.stringify(dataObj, null, 2);
+        const uint8array = new TextEncoder().encode(jsonStr);
+        const binString = Array.from(uint8array, (byte) => String.fromCharCode(byte)).join("");
+        const contentBase64 = btoa(binString);
+
+        const path = "data.json";
+        const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+        let sha = null;
+
+        try {
+            const checkRes = await fetch(url, {
+                headers: {
+                    "Authorization": `token ${token}`,
+                    "Accept": "application/vnd.github.v3+json"
+                }
+            });
+            if (checkRes.status === 200) {
+                const checkData = await checkRes.json();
+                sha = checkData.sha;
+            }
+        } catch (e) {}
+
+        const bodyData = {
+            message: "Update database (data.json) via Wiki Interaction",
+            content: contentBase64
+        };
+        if (sha) bodyData.sha = sha;
+
+        try {
+            const uploadRes = await fetch(url, {
+                method: "PUT",
+                headers: {
+                    "Authorization": `token ${token}`,
+                    "Accept": "application/vnd.github.v3+json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(bodyData)
+            });
+
+            if (uploadRes.status === 200 || uploadRes.status === 201) {
+                console.log("Wiki update successfully synced to GitHub data.json");
+                return true;
+            }
+        } catch (e) {
+            console.error("Network error during Wiki Sync:", e);
+        }
+        return false;
     }
 
     function initWikiHistory() {
@@ -1076,7 +1228,8 @@
         });
     }
 
-    function restoreWikiRevision(revNo) {
+    // 履歴復元時に自動コミット同期を噛ませます
+    async function restoreWikiRevision(revNo) {
         if (!confirm(`本当にリビジョン r${revNo} の状態へWikiを復元しますか？\n（※現在の最新版も履歴に保存されているため、いつでも再度ロールバックできます）`)) return;
 
         let history = [];
@@ -1096,7 +1249,10 @@
         localStorage.setItem("cbs_wiki_content", targetRev.content);
         addWikiHistory(targetRev.content, `r${revNo} の状態へ復元（ロールバック）`);
 
-        alert(`リビジョン r${revNo} の状態へ復元が完了しました。`);
+        // 同期
+        await syncDataToGithub();
+
+        alert(`リビジョン r${revNo} の状態へ復元が完了し、サーバーへ同期されました。`);
         activeSubpageId = "wiki-page-basic";
         renderWikiBody();
     }
@@ -1302,7 +1458,8 @@
         }
     }
 
-    function postParentComment(event) {
+    // コメント投稿に自動同期を噛ませます
+    async function postParentComment(event) {
         event.preventDefault();
         const author = document.getElementById("comment-author").value;
         const text = document.getElementById("comment-text").value.trim();
@@ -1335,11 +1492,15 @@
         notes[currentNoteTopic].push(newComment);
         localStorage.setItem("cbs_wiki_notes", JSON.stringify(notes));
 
+        // 同期
+        await syncDataToGithub();
+
         document.getElementById("comment-text").value = "";
         renderNoteTopic();
     }
 
-    function postReplyComment(commentId) {
+    // コメント返信に自動同期を噛ませます
+    async function postReplyComment(commentId) {
         const author = document.getElementById(`reply-author-${commentId}`).value;
         const text = document.getElementById(`reply-text-${commentId}`).value.trim();
 
@@ -1371,6 +1532,9 @@
             parentComment.replies.push(newReply);
             localStorage.setItem("cbs_wiki_notes", JSON.stringify(notes));
         }
+
+        // 同期
+        await syncDataToGithub();
 
         renderNoteTopic();
     }
@@ -1455,6 +1619,11 @@
             activeLink.style.color = '#202122';
         }
 
+        // アップローダー固有の権限チェックを挟みます
+        if (pageId === 'wiki-page-uploader') {
+            checkUploaderAuth();
+        }
+
         if (shouldScroll) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -1486,7 +1655,8 @@
         }
     }
 
-    function saveWikiContent() {
+    // Wiki本文の編集保存時に自動同期を噛ませます
+    async function saveWikiContent() {
         const editedContent = document.getElementById("wiki-editor-raw").value;
         
         const commentInput = prompt("今回の編集内容の要約を入力してください：\n（例: 〇〇ページの追加、誤字の修正）", "");
@@ -1498,8 +1668,158 @@
         localStorage.setItem("cbs_wiki_content", editedContent);
         addWikiHistory(editedContent, finalComment);
 
-        alert("変更がWikiに反映され、変更履歴に記録されました。");
+        // 同期
+        await syncDataToGithub();
+
+        alert("変更がWikiに反映され、サーバーへの永続同期および変更履歴への記録が完了しました。");
         renderWikiBody();
+    }
+
+    // ==========================================
+    // アップローダー連携用スクリプト
+    // ==========================================
+    function checkUploaderAuth() {
+        const isAuth = sessionStorage.getItem("wiki_uploader_authenticated") === "true";
+        if (isAuth) {
+            document.getElementById("uploader-lock-box").style.display = "none";
+            document.getElementById("uploader-form-container").style.display = "block";
+            
+            // 記憶されている情報をロードしてフォームを復元
+            document.getElementById("wiki-git-token").value = localStorage.getItem("cbs_api_token") || "";
+            document.getElementById("wiki-git-owner").value = localStorage.getItem("cbs_api_owner") || "";
+            document.getElementById("wiki-git-repo").value = localStorage.getItem("cbs_api_repo") || "";
+        } else {
+            document.getElementById("uploader-lock-box").style.display = "block";
+            document.getElementById("uploader-form-container").style.display = "none";
+        }
+    }
+
+    function unlockUploader() {
+        const pass = document.getElementById("uploader-password").value;
+        const correctUploadPass = "subaruupload2026"; 
+
+        if (pass === correctUploadPass) {
+            sessionStorage.setItem("wiki_uploader_authenticated", "true");
+            document.getElementById("uploader-error").style.display = "none";
+            checkUploaderAuth();
+        } else {
+            document.getElementById("uploader-error").style.display = "block";
+        }
+    }
+
+    async function uploadToGithubWiki(event) {
+        event.preventDefault();
+        
+        const resultBox = document.getElementById("wiki-uploader-result");
+        resultBox.style.display = "block";
+        resultBox.style.background = "#f8f9fa";
+        resultBox.style.border = "1px solid #eaecf0";
+        resultBox.style.color = "#000";
+        resultBox.innerHTML = "アップロード処理中...";
+
+        const token = document.getElementById("wiki-git-token").value.trim();
+        const owner = document.getElementById("wiki-git-owner").value.trim();
+        const repo = document.getElementById("wiki-git-repo").value.trim();
+        let path = document.getElementById("wiki-git-path").value.trim();
+        const saveSettings = document.getElementById("wiki-save-settings").checked;
+        const fileInput = document.getElementById("wiki-html-file");
+
+        if (fileInput.files.length === 0) {
+            resultBox.innerHTML = "ファイルを選択してください。";
+            return;
+        }
+
+        const file = fileInput.files[0];
+        if (!path) {
+            path = file.name;
+        }
+
+        // 設定の記憶処理
+        if (saveSettings) {
+            localStorage.setItem("cbs_api_token", token);
+            localStorage.setItem("cbs_api_owner", owner);
+            localStorage.setItem("cbs_api_repo", repo);
+        } else {
+            localStorage.removeItem("cbs_api_token");
+            localStorage.removeItem("cbs_api_owner");
+            localStorage.removeItem("cbs_api_repo");
+        }
+
+        // ファイルをBase64にエンコードしてPUTします [5]
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            const contentBase64 = e.target.result.split(',')[1];
+            const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+            let sha = null;
+
+            try {
+                const checkRes = await fetch(url, {
+                    headers: {
+                        "Authorization": `token ${token}`,
+                        "Accept": "application/vnd.github.v3+json"
+                    }
+                });
+                if (checkRes.status === 200) {
+                    const checkData = await checkRes.json();
+                    sha = checkData.sha; // 上書きのためにSHAを取得
+                }
+            } catch (err) {
+                // 新規作成
+            }
+
+            const bodyData = {
+                message: `Upload ${path} via Wiki Uploader`,
+                content: contentBase64
+            };
+            if (sha) {
+                bodyData.sha = sha;
+            }
+
+            try {
+                const uploadRes = await fetch(url, {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": `token ${token}`,
+                        "Accept": "application/vnd.github.v3+json",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(bodyData)
+                });
+
+                if (uploadRes.status === 200 || uploadRes.status === 201) {
+                    const pagesUrl = `https://${owner}.github.io/${repo}/${path}`;
+                    resultBox.style.background = "#e8f5e9";
+                    resultBox.style.border = "1px solid #c8e6c9";
+                    resultBox.style.color = "#2e7d32";
+                    resultBox.innerHTML = `
+                        <strong>🎉 アップロードが成功しました！</strong><br>
+                        GitHubへのコミットおよびプッシュに成功しました。公開予定URL：<br>
+                        <a href="${pagesUrl}" target="_blank" style="font-weight:bold; color:#0645ad; word-break:break-all;">${pagesUrl}</a>
+                        <p style="margin-top: 5px; font-size: 0.75rem; color: #555;">※GitHub側の自動ビルド（Pages反映）処理に数秒〜1分程度時間がかかる場合があります。</p>
+                    `;
+                } else {
+                    const errData = await uploadRes.json();
+                    resultBox.style.background = "#ffebee";
+                    resultBox.style.border = "1px solid #ffcdd2";
+                    resultBox.style.color = "#c62828";
+                    resultBox.innerHTML = `アップロード失敗: ${errData.message || uploadRes.statusText}`;
+                }
+            } catch (err) {
+                resultBox.style.background = "#ffebee";
+                resultBox.style.border = "1px solid #ffcdd2";
+                resultBox.style.color = "#c62828";
+                resultBox.innerHTML = `通信エラー: ${err.message}`;
+            }
+        };
+
+        reader.onerror = function() {
+            resultBox.style.background = "#ffebee";
+            resultBox.style.border = "1px solid #ffcdd2";
+            resultBox.style.color = "#c62828";
+            resultBox.innerHTML = "ファイルの読み込みに失敗しました。";
+        };
+
+        reader.readAsDataURL(file);
     }
     </script>
 </body>
