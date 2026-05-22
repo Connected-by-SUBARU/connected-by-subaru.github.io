@@ -47,7 +47,7 @@
     </footer>
 
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", async function() {
         const defaultBlogs = [
             { 
                 id: "default-blog-1", 
@@ -55,12 +55,18 @@
                 title: "すばる望遠鏡体験企画に参加してわかった、“研究の現場”のリアル", 
                 summary: "「すばる望遠鏡」と聞くと、宇宙の美しい写真や最先端の天文学研究を思い浮かべる人が多いかもしれません。ですが、実際に現地へ...", 
                 content: "blog-article.html" 
+            },
+            { 
+                id: "default-blog-2", 
+                date: "2026年5月20日", 
+                title: "サークル「CbS」キックオフ", 
+                summary: "いよいよ私たち「Connected by SUBARU(CbS)」の活動がスタートしました！...", 
+                content: "#" 
             }
         ];
 
-        // wiki.htmlと同様のキャッシュ強制クリア・自動リロード用バージョンキー
         const VERSION_KEY = "cbs_site_version";
-        const CURRENT_VERSION = "2026_v9";
+        const CURRENT_VERSION = "2026_v14";
 
         const storedVersion = localStorage.getItem(VERSION_KEY);
         if (storedVersion !== CURRENT_VERSION) {
@@ -75,10 +81,25 @@
         }
 
         let blogPosts = [];
+        
+        // 🌐 サーバー（GitHub）から共有 data.json をロードする処理
         try {
-            blogPosts = JSON.parse(localStorage.getItem('cbs_blog_posts')) || [];
+            const res = await fetch('data.json?t=' + Date.now()); // キャッシュバスター
+            if (res.ok) {
+                const sharedData = await res.json();
+                blogPosts = sharedData.blog || [];
+                // バックアップとしてローカルキャッシュも更新
+                localStorage.setItem('cbs_blog_posts', JSON.stringify(blogPosts));
+            } else {
+                throw new Error("Shared data not found");
+            }
         } catch (e) {
-            blogPosts = defaultBlogs;
+            // オフライン時、またはファイル未配置時のフォールバック処理
+            try {
+                blogPosts = JSON.parse(localStorage.getItem('cbs_blog_posts')) || defaultBlogs;
+            } catch (err) {
+                blogPosts = defaultBlogs;
+            }
         }
 
         const container = document.getElementById("dynamic-article-list");
@@ -103,7 +124,6 @@
             container.appendChild(article);
         });
 
-        // 他のタブでの変更（admin.htmlでのブログ更新など）を検知して自動リロードする仕組み
         window.addEventListener('storage', function(e) {
             if (e.key === 'cbs_blog_posts' || e.key === VERSION_KEY) {
                 location.reload();
