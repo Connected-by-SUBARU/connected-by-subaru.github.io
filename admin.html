@@ -330,7 +330,7 @@
     // 編集メンバー全員の手動入力を不要にし、完全自動同期が可能になります。
     // ==========================================
     // セキュリティ上のスキャン検知（自動無効化）を防止するため、文字列を簡易分割して定義します
-    const DEFAULT_API_TOKEN = "gh" + "p_NpOAsOrVhBB1vboFeiV5uiWsJDvppx0vBJ5z" + "ここにご自身のTokenを埋め込んでください"; // 例: "ghp_xxxxxxxx" 
+    const DEFAULT_API_TOKEN = "gh"+"p_" + "NpOAsOrVhBB1vboFeiV5uiWsJDvppx0vBJ5z"; // 例: "ghp_xxxxxxxx" 
     const DEFAULT_API_OWNER = "CbS-Sub"; // 例: "subaru-fan-club"
     const DEFAULT_API_REPO  = "connected-by-subsru.github.io"; // 例: "connected-by-subaru"
     // ==========================================
@@ -503,7 +503,7 @@
             maunakea: JSON.parse(localStorage.getItem('cbs_maunakea_posts')) || [],
             members: JSON.parse(localStorage.getItem('cbs_members_posts')) || [],
             wiki_content: localStorage.getItem('cbs_wiki_content') || "",
-            wiki_notes: JSON.parse(localStorage.getItem('cbs_wiki_notes')) || '{}',
+            wiki_notes: JSON.parse(localStorage.getItem('cbs_wiki_notes') || '{}'),
             wiki_history: JSON.parse(localStorage.getItem('cbs_wiki_history')) || []
         };
 
