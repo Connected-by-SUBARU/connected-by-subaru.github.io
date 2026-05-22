@@ -78,7 +78,7 @@
             <button type="submit" class="btn" style="width: 100%;">ログイン</button>
             <p id="admin-error" class="error-msg">認証できませんでした。</p>
         </form>
-        
+        <p style="font-size: 0.75rem; color: #999; margin-top: 20px;">※管理用デモパスワード: <code style="background:#eee; padding: 2px 4px;">cbsadmin2026</code></p>
     </div>
 
     <!-- 管理ダッシュボード -->
@@ -86,6 +86,33 @@
         <div class="admin-dashboard">
             <h1 style="color: #0b132b; margin-bottom: 5px;">サイトコンテンツ総合管理</h1>
             <p style="margin-bottom: 30px; color: #666;">初期のデフォルトコンテンツを含む、全ページの編集・追加・削除が行えます。</p>
+
+            <!-- 🛠 GitHub 永続化同期パネル (data.jsonをDB化) -->
+            <div style="background: #eef2f7; border: 1px solid #ccd6e0; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                <h3 style="color: #0b132b; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">⚙️ データベース永続化設定 (GitHub連携)</h3>
+                <p style="font-size: 0.8rem; color: #555; margin-bottom: 15px;">
+                    変更内容をクラウド（GitHubの data.json）に保存するための設定です。入力した情報はブラウザ（LocalStorage）にのみ安全に記憶されます [5]。
+                </p>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px; display:flex; flex-direction:column;">
+                        <label style="font-size: 0.8rem; font-weight: bold; margin-bottom: 4px;">GitHub 個人アクセストークン</label>
+                        <input type="password" id="api-token" placeholder="ghp_xxxxxx" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem;">
+                    </div>
+                    <div style="flex: 1; min-width: 150px; display:flex; flex-direction:column;">
+                        <label style="font-size: 0.8rem; font-weight: bold; margin-bottom: 4px;">ユーザー名 / 組織名</label>
+                        <input type="text" id="api-owner" placeholder="例: subaru-fan" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem;">
+                    </div>
+                    <div style="flex: 1; min-width: 150px; display:flex; flex-direction:column;">
+                        <label style="font-size: 0.8rem; font-weight: bold; margin-bottom: 4px;">リポジトリ名</label>
+                        <input type="text" id="api-repo" placeholder="例: cbs-site" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem;">
+                    </div>
+                </div>
+                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                    <button onclick="saveApiSettings()" class="btn" style="padding: 6px 15px; font-size: 0.8rem;">設定を保存する</button>
+                    <button onclick="pushDataToGithub(false)" id="sync-btn" class="btn" style="padding: 6px 15px; font-size: 0.8rem; background-color: #27ae60; color: #fff;">🔄 クラウドと完全同期</button>
+                    <span id="sync-status" style="font-size: 0.8rem; color: #4a5568; align-self: center; font-weight: bold;"></span>
+                </div>
+            </div>
 
             <div class="admin-tabs">
                 <button class="tab-btn active" id="tab-blog" onclick="switchTab('blog')">📝 ブログ</button>
@@ -95,7 +122,6 @@
                 <button class="tab-btn" id="tab-members" onclick="switchTab('members')">👥 メンバー紹介</button>
             </div>
 
-            <!-- 現在編集中のIDを保持する隠しフィールド -->
             <input type="hidden" id="edit-id" value="">
 
             <!-- ================= ブログ管理パネル ================= -->
@@ -233,8 +259,7 @@
                     <form id="add-members-form" onsubmit="saveData(event, 'members')">
                         <div class="form-group">
                             <label for="mem-name">メンバーのお名前（大学名）</label>
-                            <!-- お名前入力例を「すばる　太郎」に書き換えました -->
-                            <input type="text" id="mem-name" required placeholder="例：昴太郎">
+                            <input type="text" id="mem-name" required placeholder="例：すばる　太郎">
                         </div>
                         <div class="form-group">
                             <label for="mem-role">役職・担当（英字・複数可）</label>
@@ -250,7 +275,7 @@
                         </div>
                         <div class="form-group">
                             <label for="mem-photo">アバター用の一文字（漢字など）</label>
-                            <input type="text" id="mem-photo" maxlength="1" required placeholder="例：昴">
+                            <input type="text" id="mem-photo" maxlength="1" required placeholder="例：横">
                         </div>
                         <div class="form-group">
                             <label for="mem-comment">活動に対するコメント・自己紹介（任意・後から追加可能）</label>
@@ -307,20 +332,8 @@
     });
 
     const defaultBlogs = [
-        { 
-            id: "default-blog-1", 
-            date: "2026年5月18日", 
-            title: "すばる望遠鏡体験企画に参加してわかった、“研究の現場”のリアル", 
-            summary: "「すばる望遠鏡」と聞くと、宇宙の美しい写真や最先端の天文学研究を思い浮かべる人が多いかもしれません。ですが、実際に現地へ...", 
-            content: "blog-article.html" 
-        },
-        { 
-            id: "default-blog-2", 
-            date: "2026年5月20日", 
-            title: "サークル「CbS」キックオフ", 
-            summary: "いよいよ私たち「Connected by SUBARU(CbS)」の活動がスタートしました！...", 
-            content: "#" 
-        }
+        { id: "default-blog-1", date: "2026年5月18日", title: "すばる望遠鏡体験企画に参加してわかった、“研究の現場”のリアル", summary: "「すばる望遠鏡」と聞くと、宇宙の美しい写真や最先端の天文学研究を思い浮かべる人が多いかもしれません。ですが、実際に現地へ...", content: "blog-article.html" },
+        { id: "default-blog-2", date: "2026年5月20日", title: "サークル「CbS」キックオフ", summary: "いよいよ私たち「Connected by SUBARU(CbS)」の活動がスタートしました！...", content: "#" }
     ];
 
     const defaultEvents = [
@@ -330,7 +343,7 @@
 
     const defaultMonthly = [
         { id: "default-monthly-1", title: "宇宙の果ての巨大銀河を発見！", date: "2026年5月 更新", imgText: "（銀河の画像）", desc: "地球から130億光年以上も離れた場所に、想像以上に成長した銀河が見つかりました。タイムマシンに乗って昔の宇宙を覗いているような感覚です！", content: "#" },
-        { id: "default-monthly-2", title: "星の赤ちゃんが生まれるゆりかご", date: "2026年4月 更新", imgText: "（星が生まれる場所の画像）", desc: "チリとガスが渦巻く星雲の中で、まさに今、新しい星が誕生しようとしている様子が鮮明に撮影されました。超高解像度ならではの1枚です。", content: "#" },
+        { id: "default-monthly-2", title: "星の赤ちゃんが生まれるゆりかご", date: "2026年4月 更新", imgText: "（星が生まれる場所 of 画像）", desc: "チリとガスが渦巻く星雲の中で、まさに今、新しい星が誕生しようとしている様子が鮮明に撮影されました。超高解像度ならではの1枚です。", content: "#" },
         { id: "default-monthly-3", title: "第二の地球を探して", date: "2026年3月 更新", imgText: "（惑星の画像）", desc: "すばる望遠鏡の特殊な装置を使って、太陽系外の惑星を直接撮影することに成功。そこには生命が存在するのでしょうか？", content: "#" }
     ];
 
@@ -379,7 +392,7 @@
     function unlockAdmin(event) {
         event.preventDefault();
         const passInput = document.getElementById("admin-password").value;
-        const correctPassword = "maxihete"; 
+        const correctPassword = "cbsadmin2026"; 
 
         if (passInput === correctPassword) {
             sessionStorage.setItem("admin_authenticated", "true");
@@ -392,6 +405,7 @@
     function showAdmin() {
         document.getElementById("admin-lock-screen").style.display = "none";
         document.getElementById("admin-main-content").style.display = "block";
+        loadApiSettings();
         loadManageTable();
         resetForms();
     }
@@ -399,6 +413,98 @@
     function lockAdmin() {
         sessionStorage.removeItem("admin_authenticated");
         location.reload();
+    }
+
+    // API設定の読み書きロジック
+    function saveApiSettings() {
+        const token = document.getElementById("api-token").value.trim();
+        const owner = document.getElementById("api-owner").value.trim();
+        const repo = document.getElementById("api-repo").value.trim();
+
+        localStorage.setItem("cbs_api_token", token);
+        localStorage.setItem("cbs_api_owner", owner);
+        localStorage.setItem("cbs_api_repo", repo);
+        alert("GitHub連携設定をローカルブラウザに保存しました。");
+    }
+
+    function loadApiSettings() {
+        document.getElementById("api-token").value = localStorage.getItem("cbs_api_token") || "";
+        document.getElementById("api-owner").value = localStorage.getItem("cbs_api_owner") || "";
+        document.getElementById("api-repo").value = localStorage.getItem("cbs_api_repo") || "";
+    }
+
+    // data.jsonをGitHub APIで直接上書きアップデートする自動同期プログラム [5]
+    async function pushDataToGithub(quiet = true) {
+        const token = localStorage.getItem("cbs_api_token");
+        const owner = localStorage.getItem("cbs_api_owner");
+        const repo = localStorage.getItem("cbs_api_repo");
+
+        if (!token || !owner || !repo) {
+            if (!quiet) alert("GitHub連携用のAPI設定が未設定です。設定を行ってから同期してください。");
+            return;
+        }
+
+        const statusSpan = document.getElementById("sync-status");
+        statusSpan.innerText = "🔄 クラウド同期中...";
+
+        const payload = {
+            blog: JSON.parse(localStorage.getItem('cbs_blog_posts')) || [],
+            events: JSON.parse(localStorage.getItem('cbs_events_posts')) || [],
+            monthly: JSON.parse(localStorage.getItem('cbs_monthly_posts')) || [],
+            maunakea: JSON.parse(localStorage.getItem('cbs_maunakea_posts')) || [],
+            members: JSON.parse(localStorage.getItem('cbs_members_posts')) || []
+        };
+
+        // UTF-8対応のBase64エンコーディング [5]
+        const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
+        const url = `https://api.github.com/repos/${owner}/${repo}/contents/data.json`;
+        let sha = null;
+
+        try {
+            const checkRes = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "Authorization": `token ${token}`,
+                    "Accept": "application/vnd.github.v3+json"
+                }
+            });
+            if (checkRes.status === 200) {
+                const checkData = await checkRes.json();
+                sha = checkData.sha;
+            }
+        } catch (e) {
+            // 新規作成
+        }
+
+        const bodyData = {
+            message: "Update database (data.json) via CbS Admin Console",
+            content: contentBase64
+        };
+        if (sha) bodyData.sha = sha;
+
+        try {
+            const putRes = await fetch(url, {
+                method: "PUT", [5]
+                headers: {
+                    "Authorization": `token ${token}`,
+                    "Accept": "application/vnd.github.v3+json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(bodyData)
+            });
+
+            if (putRes.status === 200 || putRes.status === 201) {
+                statusSpan.innerText = "✅ クラウド同期完了！";
+                if (!quiet) alert("GitHub（data.json）との同期に成功しました。公開サイトへまもなく自動反映されます。");
+            } else {
+                const errData = await putRes.json();
+                statusSpan.innerText = "❌ クラウド同期失敗";
+                if (!quiet) alert("クラウド同期エラー: " + errData.message);
+            }
+        } catch (e) {
+            statusSpan.innerText = "❌ 通信エラー";
+            if (!quiet) alert("同期中のネットワーク通信エラー: " + e.message);
+        }
     }
 
     function switchTab(category) {
@@ -518,6 +624,9 @@
         localStorage.setItem(storageKey, JSON.stringify(list));
         resetForms();
         loadManageTable();
+
+        // 💾 バックグラウンドで自動クラウド上書き同期を掛けます
+        pushDataToGithub(true);
     }
 
     function startEdit(category, itemId) {
@@ -614,6 +723,9 @@
         localStorage.setItem(storageKey, JSON.stringify(list));
         loadManageTable();
         resetForms();
+
+        // 💾 削除時もクラウド自動同期を掛けます
+        pushDataToGithub(true);
     }
 
     function loadManageTable() {
