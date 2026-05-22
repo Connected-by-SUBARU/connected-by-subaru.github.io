@@ -40,7 +40,7 @@
       "id": "default-monthly-1",
       "title": "宇宙の果ての巨大銀河を発見！",
       "date": "2026年5月 更新",
-      "imgText: ": "（銀河の画像）",
+      "imgText": "（銀河の画像）",
       "desc": "地球から130億光年以上も離れた場所に、想像以上に成長した銀河が見つかりました。タイムマシンに乗って昔の宇宙を覗いているような感覚です！",
       "content": "#"
     },
@@ -48,7 +48,7 @@
       "id": "default-monthly-2",
       "title": "星の赤ちゃんが生まれるゆりかご",
       "date": "2026年4月 更新",
-      "imgText: ": "（星が生まれる場所の画像）",
+      "imgText": "（星が生まれる場所の画像）",
       "desc": "チリとガスが渦巻く星雲の中で、まさに今、新しい星が誕生しようとしている様子が鮮明に撮影されました。超高解像度ならではの1枚です。",
       "content": "#"
     },
@@ -56,7 +56,7 @@
       "id": "default-monthly-3",
       "title": "第二の地球を探して",
       "date": "2026年3月 更新",
-      "imgText: ": "（惑星の画像）",
+      "imgText": "（惑星の画像）",
       "desc": "すばる望遠鏡の特殊な装置を使って、太陽系外の惑星を直接撮影することに成功。そこには生命が存在するのでしょうか？",
       "content": "#"
     }
@@ -101,7 +101,7 @@
       "id": "default-member-2",
       "name": "横山史織 (日大)",
       "role": "Hawaii Culturist / Writer",
-      "photo: ": "横",
+      "photo": "横",
       "comment": "",
       "year": "2026",
       "category": "編集・執筆"
@@ -110,7 +110,7 @@
       "id": "default-member-3",
       "name": "髙橋恵吾 (東北大)",
       "role": "Visual Designer / Editor",
-      "photo: ": "髙",
+      "photo": "髙",
       "comment": "",
       "year": "2026",
       "category": "デザイン"
@@ -119,7 +119,7 @@
       "id": "default-member-4",
       "name": "落合優名 (琉球大)",
       "role": "Event Planner",
-      "photo: ": "落",
+      "photo": "落",
       "comment": "",
       "year": "2026",
       "category": "企画"
@@ -128,7 +128,7 @@
       "id": "default-member-5",
       "name": "川田匠人 (鹿児島大)",
       "role": "Web Engineer / Designer",
-      "photo: ": "川",
+      "photo": "川",
       "comment": "",
       "year": "2026",
       "category": "開発・デザイン"
@@ -137,7 +137,7 @@
       "id": "default-member-6",
       "name": "高森碧 (京都産業大)",
       "role": "Product Planner / PR",
-      "photo: ": "高",
+      "photo": "高",
       "comment": "",
       "year": "2026",
       "category": "企画・広報"
