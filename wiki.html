@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>サークル専用Wiki | Connected by SUBARU(CbS)</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* ================= MediaWiki風 無骨なWikiスタイルリreset ================= */
+        .wiki-body-bg {
+            background-color: #f6f6f6;
+            color: #202122;
+        }
+        .wiki-layout {
+            display: flex;
+            min-height: calc(100vh - 120px);
+            background-color: #f6f6f6;
+            border-top: 1px solid #a7d7f9;
+        }
+        
+        /* 左サイドバー */
+        .wiki-sidebar {
+            width: 176px;
+            padding: 1.5em 1em 1em 1.5em;
+            background-color: #f6f6f6;
+            flex-shrink: 0;
+            position: sticky;
+            top: 70px; /* ヘッダーの高さに合わせて固定 */
+            height: calc(100vh - 190px);
+            overflow-y: auto;
+        }
+        .wiki-sidebar-logo {
+            font-size: 0.95rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #000;
+            border-bottom: 2px solid #0645ad;
+            padding-bottom: 5px;
+        }
+        .wiki-sidebar h3 {
+            font-size: 0.75rem;
+            color: #444;
+            text-transform: uppercase;
+            margin-top: 1.5em;
+            border-bottom: 1px solid #c8ccd1;
+            padding-bottom: 0.2em;
+            font-weight: normal;
+        }
+        .wiki-sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0.3em 0 0 0;
+        }
+        .wiki-sidebar li {
+            font-size: 0.8rem;
+            margin-bottom: 0.5em;
+            line-height: 1.3;
+        }
+        .wiki-sidebar a {
+            color: #0645ad;
+            text-decoration: none;
+            transition: font-weight 0.1s;
+        }
+        .wiki-sidebar a:hover {
+            text-decoration: underline;
+        }
+
+        /* メインコンテンツエリア */
+        .wiki-main {
+            flex-grow: 1;
+            background-color: #ffffff;
+            padding: 1.25em 2.5em 2.5em 2.5em;
+            border-left: 1px solid #a7d7f9;
+            box-shadow: -1px 0 0 #a7d7f9;
+            display: flex;
+            justify-content: center; /* 内部コンテンツを中央寄せにする */
+        }
+
+        /* ページが横長になりすぎないための制限コンテナ */
+        .wiki-content-container {
+            width: 100%;
+            max-width: 840px; /* 読みやすさに適した最大幅 */
+        }
+
+        /* 上部タブ */
+        .wiki-tabs-container {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #a7d7f9;
+            margin-bottom: 1.5em;
+        }
+        .wiki-tabs-left, .wiki-tabs-right {
+            display: flex;
+        }
+        .wiki-tab {
+            background-color: #f6f6f6;
+            border: 1px solid #a7d7f9;
+            border-bottom: none;
+            padding: 6px 14px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-right: 2px;
+            color: #0645ad;
+            border-radius: 2px 2px 0 0;
+            user-select: none;
+        }
+        .wiki-tab:hover {
+            background-color: #e8f2fc;
+        }
+        .wiki-tab.active {
+            background-color: #ffffff;
+            color: #202122;
+            font-weight: bold;
+            border-bottom: 1px solid #ffffff;
+            margin-bottom: -1px;
+            cursor: default;
+        }
+
+        /* Wiki文書デザイン */
+        .wiki-article-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            border-bottom: 1px solid #a2a9b1;
+            padding-bottom: 3px;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            font-weight: normal;
+            color: #000;
+        }
+        .wiki-article-subtitle {
+            font-size: 0.75rem;
+            color: #54595d;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* 目次 (Table of Contents) */
+        .wiki-toc {
+            background-color: #f8f9fa;
+            border: 1px solid #a2a9b1;
+            padding: 12px 18px;
+            display: inline-block;
+            margin-bottom: 1.5em;
+            font-size: 0.85rem;
+            min-width: 240px;
+        }
+        .wiki-toc-title {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .wiki-toc ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+        .wiki-toc li {
+            margin-bottom: 5px;
+        }
+        .wiki-toc a {
+            color: #0645ad;
+            text-decoration: none;
+        }
+        .wiki-toc a:hover {
+            text-decoration: underline;
+        }
+
+        /* 文書内の共通タグ上書き */
+        .wiki-body-content h2 {
+            font-size: 1.4rem;
+            border-bottom: 1px solid #a2a9b1;
+            padding-bottom: 3px;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            font-weight: normal;
+            color: #000;
+        }
+        .wiki-body-content h3 {
+            font-size: 1.1rem;
+            margin-top: 1.2em;
+            margin-bottom: 0.4em;
+            font-weight: bold;
+            color: #000;
+        }
+        .wiki-body-content p {
+            margin-top: 0.4em;
+            margin-bottom: 0.9em;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #202122;
+        }
+        .wiki-body-content ul {
+            margin: 0.3em 0 0.9em 1.5em;
+            font-size: 0.85rem;
+        }
+
+        /* 技術解説用コードブロック */
+        .wiki-body-content pre {
+            background-color: #f8f9fa;
+            border: 1px solid #eaecf0;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: monospace, Courier, monospace;
+            font-size: 0.8rem;
+            margin-bottom: 1.2em;
+            line-height: 1.4;
+            color: #000;
+        }
+
+        /* 編集・パスワード用無骨インターフェース */
+        .wiki-editor-textarea {
+            width: 100%;
+            font-family: monospace, Courier, monospace;
+            font-size: 13px;
+            padding: 10px;
+            border: 1px solid #a2a9b1;
+            line-height: 1.5;
+            background-color: #fff;
+            color: #000;
+            resize: vertical;
+        }
+        .wiki-lock-box {
+            max-width: 450px;
+            margin: 40px auto;
+            border: 1px solid #a2a9b1;
+            background-color: #f8f9fa;
+            padding: 25px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="wiki-body-bg">
+    <header>
+        <div class="logo"><a href="index.html">Connected by SUBARU(CbS)</a></div>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="monthly.html">今月のすばる</a></li>
+                <li><a href="events.html">イベント告知</a></li>
+                <li><a href="maunakea.html">マウナケア便り</a></li>
+                <li><a href="members.html">メンバー紹介</a></li>
+                <li><a href="media.html">メディア・ライブ</a></li>
+                <li><a href="wiki.html" style="color: #fca311; font-weight: bold;">Wiki(限定)</a></li>
+                <li><a href="index.html#join">お問い合わせ</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ロック画面 (一般閲覧ロック) -->
+    <div id="lock-screen" class="lock-container" style="margin-top: 80px; margin-bottom: 80px;">
+        <div class="lock-icon">🔒</div>
+        <h2>サークル内部専用Wiki</h2>
+        <p style="margin-bottom: 20px; font-size: 0.9rem; color: #666;">閲覧するには閲覧用共通パスワードを入力してください。</p>
+        <form id="wiki-login-form" class="lock-form" onsubmit="unlockWiki(event)">
+            <input type="password" id="wiki-password" placeholder="パスワードを入力してください" required>
+            <button type="submit" class="btn" style="width: 100%;">ロックを解除</button>
+            <p id="wiki-error" class="error-msg">パスワードが正しくありません。</p>
+        </form>
+        
+    </div>
+
+    <!-- Wiki全体エリア（デフォルト時は非表示） -->
+    <div id="wiki-main-content" class="wiki-layout" style="display: none;">
+        
+        <!-- 左サイドバー（HTML内のサブページ構造から全自動で項目が動的生成されます） -->
+        <aside class="wiki-sidebar" id="wiki-sidebar-dynamic">
+            <div class="wiki-sidebar-logo">CbS Wiki Nav</div>
+            <!-- JSで動的にメニューが挿入されます -->
+        </aside>
+
+        <!-- メイン文書エリア -->
+        <main class="wiki-main">
+            <!-- 横長制限を適用するコンテナ -->
+            <div class="wiki-content-container">
+                <!-- 上部Wiki風タブ -->
+                <div class="wiki-tabs-container">
+                    <div class="wiki-tabs-left">
+                        <button class="wiki-tab active" id="tab-view" onclick="renderWikiBody(); switchWikiTab('view')">ページ</button>
+                        <button class="wiki-tab" id="tab-note" onclick="switchWikiTab('note')">ノート</button>
+                    </div>
+                    <div class="wiki-tabs-right">
+                        <button class="wiki-tab" id="tab-action-view" onclick="renderWikiBody(); switchWikiTab('view')">閲覧</button>
+                        <button class="wiki-tab" id="tab-action-edit" onclick="switchWikiTab('edit')">編集</button>
+                        <button class="wiki-tab" id="tab-action-history" onclick="switchWikiTab('history')">履歴</button>
+                    </div>
+                </div>
+
+                <!-- ================= 閲覧モード用 ================= -->
+                <div id="wiki-view-panel">
+                    <!-- 本文エリア (JavaScriptによりサブページが描画・制御されます) -->
+                    <div id="wiki-rendered-body" class="wiki-body-content">
+                        <!-- ここにLocalStorageのHTMLがそのまま読み込まれます -->
+                    </div>
+                </div>
+
+                <!-- ================= 編集モード用 ================= -->
+                <div id="wiki-edit-panel" style="display: none;">
+                    <h1 class="wiki-article-title">「サークル運営用Wiki」を編集</h1>
+                    <div class="wiki-article-subtitle">ソース（プレーンHTML形式）を自由に記述して全体の編集が行えます。</div>
+
+                    <!-- 編集ロック（未認証の時のみ表示） -->
+                    <div id="edit-lock-box" class="wiki-lock-box">
+                        <div style="font-size: 2rem; margin-bottom: 10px;">🔒</div>
+                        <h3 style="margin-bottom: 10px; font-weight: normal;">編集権限ロック</h3>
+                        <p style="font-size: 0.8rem; color: #555; margin-bottom: 15px;">このWikiを編集するには、サークル編集用パスワードを入力してください。</p>
+                        <input type="password" id="edit-password" placeholder="編集用パスワード" style="padding: 8px; font-size: 0.9rem; border: 1px solid #a2a9b1; width: 80%; margin-bottom: 15px; text-align: center;"><br>
+                        <button onclick="unlockEditor()" class="btn" style="padding: 6px 20px; font-size: 0.85rem; background-color: #34495e; color: #fff;">編集ロック解除</button>
+                        <p id="edit-error" style="color: #c0392b; font-size: 0.8rem; margin-top: 10px; display: none;">編集パスワードが一致しません。</p>
+                        
+                    </div>
+
+                    <!-- 編集エリア（認証完了時に表示） -->
+                    <div id="edit-textarea-container" style="display: none;">
+                        <textarea id="wiki-editor-raw" class="wiki-editor-textarea" rows="22"></textarea>
+                        
+                        <div style="margin-top: 15px; border-top: 1px solid #c8ccd1; padding-top: 15px;">
+                            <button onclick="saveWikiContent()" class="btn" style="background-color: #0645ad; color: #fff; border-radius: 2px; font-size: 0.85rem; padding: 6px 16px;">変更を保存</button>
+                            <button onclick="switchWikiTab('view')" class="btn" style="background-color: #f8f9fa; color: #202122; border: 1px solid #a2a9b1; border-radius: 2px; font-size: 0.85rem; padding: 6px 16px; margin-left: 10px;">キャンセル</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= 履歴モード用 ================= -->
+                <div id="wiki-history-panel" style="display: none;">
+                    <h1 class="wiki-article-title">「サークル運営用Wiki」の変更履歴</h1>
+                    <div class="wiki-article-subtitle">これまでに保存されたすべての版（リビジョン）履歴です。任意の過去バージョンに安全に復元できます。</div>
+
+                    <div style="background: #fff; border: 1px solid #a2a9b1; padding: 20px; border-radius: 4px; overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 600px;" id="wiki-history-table">
+                            <thead>
+                                <tr style="background: #f8f9fa; border-bottom: 2px solid #a2a9b1;">
+                                    <th style="padding: 10px; text-align: center; width: 80px;">版 (Rev)</th>
+                                    <th style="padding: 10px; text-align: left; width: 180px;">保存日時</th>
+                                    <th style="padding: 10px; text-align: left;">変更内容の要約 (コメント)</th>
+                                    <th style="padding: 10px; text-align: right; width: 120px;">サイズ (文字数)</th>
+                                    <th style="padding: 10px; text-align: center; width: 140px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- JavaScriptで動的に履歴リストを描画します -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ================= ノート（掲示板）モード用 ================= -->
+                <div id="wiki-note-panel" style="display: none;">
+                    <h1 class="wiki-article-title" id="note-topic-title">💬 メンバー専用ノート議論掲示板</h1>
+                    <div class="wiki-article-subtitle">記事 of 更新、サークル運営、活動方針などについて議論する専用掲示板です。</div>
+
+                    <!-- トピック（ページ）切り替え用ボタンリスト -->
+                    <div style="display: flex; gap: 8px; margin-bottom: 25px; flex-wrap: wrap;">
+                        <button class="btn" id="btn-topic-blog" onclick="switchNoteTopic('topic-blog')" style="background-color: #0b132b; color: #fff; font-size: 0.8rem; padding: 6px 14px; border-radius: 4px;">📝 ブログネタ出し・相談</button>
+                        <button class="btn" id="btn-topic-rules" onclick="switchNoteTopic('topic-rules')" style="background-color: #e2e8f0; color: #4a5568; font-size: 0.8rem; padding: 6px 14px; border-radius: 4px;">⚖ ルール・ガイドライン議論</button>
+                        <button class="btn" id="btn-topic-todo" onclick="switchNoteTopic('topic-todo')" style="background-color: #e2e8f0; color: #4a5568; font-size: 0.8rem; padding: 6px 14px; border-radius: 4px;">📅 TODO・進行管理</button>
+                        <button class="btn" id="btn-topic-bugs" onclick="switchNoteTopic('topic-bugs')" style="background-color: #e2e8f0; color: #4a5568; font-size: 0.8rem; padding: 6px 14px; border-radius: 4px;">⚙ 不具合・要望報告</button>
+                    </div>
+
+                    <!-- 親コメント投稿フォーム -->
+                    <div style="background: #fff; border: 1px solid #a2a9b1; padding: 20px; border-radius: 4px; margin-bottom: 30px;">
+                        <h3 style="margin-bottom: 12px; font-size: 1rem; color: #0b132b;">新規コメントを投稿</h3>
+                        <form id="note-comment-form" onsubmit="postParentComment(event)">
+                            <div style="display: flex; gap: 10px; margin-bottom: 12px; align-items: center;">
+                                <label for="comment-author" style="font-size: 0.85rem; font-weight: bold;">投稿者：</label>
+                                <!-- 匿名メンバーが最初になるようにJSで動的生成されます -->
+                                <select id="comment-author" style="padding: 6px 12px; border: 1px solid #a2a9b1; border-radius: 3px; font-size: 0.85rem; background: #fff;">
+                                </select>
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <textarea id="comment-text" rows="3" required placeholder="ディスカッション内容を記入してください。他のメンバーはYouTube風に個別スレッドで返信可能です。" style="width: 100%; font-size: 0.85rem; padding: 10px; border: 1px solid #a2a9b1; border-radius: 3px; resize: vertical;"></textarea>
+                            </div>
+                            <button type="submit" class="btn" style="background-color: #0645ad; color: #fff; font-size: 0.8rem; padding: 6px 15px; border-radius: 3px;">コメントを投稿</button>
+                        </form>
+                    </div>
+
+                    <!-- スレッド（コメント・返信）一覧 -->
+                    <div id="note-threads-container">
+                        <!-- JavaScriptにて動的に挿入されます -->
+                    </div>
+                </div>
+                
+                <div style="text-align: right; margin-top: 50px; border-top: 1px solid #a2a9b1; padding-top: 5px;">
+                    <button onclick="lockWiki()" style="font-size: 0.75rem; background: none; border: none; color: #0645ad; cursor: pointer; text-decoration: underline;">Wikiセッション終了（施錠）</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <div class="footer-sns">
+            <a href="https://x.com" target="_blank">X (旧Twitter)</a>
+            <a href="https://instagram.com" target="_blank">Instagram</a>
+            <a href="media.html">YouTube / ライブ中継</a>
+            <a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;">(管理者ログイン)</a>
+        </div>
+        <p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.</p>
+        <p><small>※当サークルは国立天文台を応援する有志のボランティアサークルです。</small></p>
+    </footer>
+
+    <!-- Wiki動作ロジックスクリプト -->
+    <script>
+    // 離脱・リロードした瞬間に「編集権限セッション」のみ即座に破棄
+    window.addEventListener("beforeunload", function() {
+        sessionStorage.removeItem("wiki_editor_authenticated");
+    });
+
+    // 規定の表示コンテンツ (大枠カテゴリごとに class="wiki-subpage" で切り分け管理)
+    const defaultWikiContent = `
+<div id="wiki-page-basic" class="wiki-subpage" data-menu-category="基本方針" data-menu-title="1 メインページ / 基本方針">
+    <h1 class="wiki-article-title">📢 CbS 活動理念と基本方針</h1>
+    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
+
+    <div class="wiki-toc">
+        <div class="wiki-toc-title">目次</div>
+        <ul>
+            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-basic')">1 📢 CbS 活動理念とポリシー</a></li>
+            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-monthlyguide')">2 🌌 今月のすばる追加手順の解説</a></li>
+            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-monthly-template')">3 🌌 今月のすばる用HTMLテンプレート</a></li>
+            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-eventguide')">4 🌟 イベント告知追加手順の解説</a></li>
+            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-event-template')">5 🌟 イベント告知用HTMLテンプレート</a></li>
+            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-maunakeaguide')">6 🌺 マウナケア便り追加手順の解説</a></li>
+            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-maunakea-template')">7 🌺 マウナケア便り用HTMLテンプレート</a></li>
+            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-blogguide')">8 💻 ブログ追加手順の解説</a></li>
+            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-template')">9 📸 公式HTMLテンプレート</a></li>
+            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-edit-points')">10 🛠 編集におけるポイント</a></li>
+        </ul>
+    </div>
+
+    <h2>📢 CbS 活動理念とポリシー</h2>
+    <p>私たちの目標は「すばる望遠鏡」および国立天文台の活動を、宇宙に詳しくない一般の人、中学生や高校生に対しても「易しい言葉、美しいビジュアル」で届けることです。</p>
+    <p><strong>活動の注意点：</strong><br>
+    ・当団体はボランティア（非公式有志団体）であり、公式見解と誤認されないよう十分注意してください。<br>
+    ・引用ルールを守り、最新のデータや撮影画像の権利元クレジット（© NAOJ 等）は必ず正しく掲載してください。</p>
+
+    <h2>📝 今後のプロジェクト＆企画書</h2>
+    <p><strong>1. 国立天文台への新しい「すばる望遠鏡公式グッズ」提案企画</strong><br>
+    ・天の川レーザー射出の様子を再現した蓄光ピンバッジ of 設計書（ミサキ・コウタ担当）<br>
+    ・中高生向け学習用パンフレット案の草稿</p>
+    <p><strong>2. 夏 of オンライン星空観望会（7/11）の役割分担</strong><br>
+    ・配信・配信システム構築：コウタ<br>
+    ・星空解説の資料・トークスクリプト作成：アキト・ハルナ</p>
+
+    <h2>📁 広報用素材アセット共有</h2>
+    <p>公式のオープンソース素材やクレジット記載のフォーマットを掲載しています。<br>
+    ・すばる望遠鏡写真アーカイブリンク<br>
+    ・サークル公式ロゴマーク（AI / PNGデータはSlackをご確認ください）</p>
+</div>
+
+<div id="wiki-page-monthlyguide" class="wiki-subpage" style="display: none;" data-menu-category="今月のすばる追加ガイド" data-menu-title="2.1 今月のすばる追加手順">
+    <h1 class="wiki-article-title">🌌 「今月のすばる」追加手順と執筆ガイド</h1>
+    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
+
+    <p>「今月のすばる」は、すばる望遠鏡が公開した最新の観測画像や、公式X（旧Twitter）などで注目を集めた成果を、専門知識のない一般の方向けに「数式を使わず」「やさしい言葉」で噛み砕いて紹介するカード型のコンテンツです。</p>
+    
+    <h2>📋 追加・変更の手順フロー</h2>
+    <ul>
+        <li><strong>ステップ1：紹介する観測成果の選定</strong><br>
+        国立天文台（NAOJ）のプレスリリースや、すばる望遠鏡公式ウェブサイト、公式Xから、中高生や一般の方が興味を持ちそうなビジュアル（美しい銀河、星雲、惑星など）のリリースを選びます。</li>
+        <li><strong>ステップ2：やさしい解説文の作成</strong><br>
+        「130億光年」「ダークマター」といった言葉を使う際は、それがどのような意味なのか一言で補足するなど、噛み砕いた文章を作成します。数式や難解な学術記号は使わないのがCbSの広報ポリシーです。</li>
+        <li><strong>ステップ3：管理者コンソール（admin.html）からの登録</strong><br>
+        管理者ログイン後、「🌌 今月のすばる」タブを開き、以下の各項目を入力します：<br>
+        ・<strong>タイトル（観測成果の簡易説明）</strong>：観測成果をキャッチーに説明した文（例：宇宙に咲く巨大なひまわり銀河！）<br>
+        ・<strong>更新年月</strong>：いつの更新分か（例：2026年6月 更新）<br>
+        ・<strong>画像プレースホルダー表示名</strong>：掲載予定の画像をイメージできる短い表示名（例：ひまわり銀河の鮮明画像）<br>
+        ・<strong>分かりやすい解説（数式を使わない説明文）</strong>：作成した数式を使わない150〜250文字程度の解説文<br>
+        ・<strong>解説ページのURL / HTMLファイル名</strong>：詳細な解説や国立天文台の公式発表ページへ直接リンクさせたい場合は、そのURLまたは自作HTML名を入力します（空欄でも問題なく動作します）。</li>
+        <li><strong>ステップ4：登録と表示確認</strong><br>
+        「解説カードを発行する」ボタンをクリックします。保存完了後、<a href="monthly.html" target="_blank">monthly.html</a>（今月のすばる）に新しいカードが即時追加され、「解説を読む →」から指定したURLへ正しくリンクできているか確認してください。</li>
+    </ul>
+</div>
+
+<div id="wiki-page-monthly-template" class="wiki-subpage" style="display: none;" data-menu-category="今月のすばる追加ガイド" data-menu-title="2.2 公式HTMLテンプレート">
+    <h1 class="wiki-article-title">🌌 「今月のすばる」詳細解説用HTMLテンプレート</h1>
+    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
+
+    <p>「今月のすばる」カードから「解説を読む →」をクリックした際に遷移させるための詳細解説ページ用テンプレートです。画像解説に特化した無駄のない2段組み構造です。</p>
+
+    <pre>&lt;!DOCTYPE html&gt;
+&lt;html lang="ja"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;link rel="stylesheet" href="css/style.css"&gt;
+    &lt;title&gt;【観測テーマ名】 | 今月のすばる | CbS&lt;/title&gt;
+&lt;/head&gt;
+&lt;body class="bg-light"&gt;
+    &lt;header&gt;
+        &lt;div class="logo"&gt;&lt;a href="index.html"&gt;Connected by SUBARU(CbS)&lt;/a&gt;&lt;/div&gt;
+        &lt;nav&gt;
+            &lt;ul class="nav-menu"&gt;
+                &lt;li&gt;&lt;a href="index.html"&gt;Home&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="blog.html"&gt;Blog&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="monthly.html"&gt;今月のすばる&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="events.html"&gt;イベント告知&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="maunakea.html"&gt;マウナケア便り&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="members.html"&gt;メンバー紹介&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="media.html"&gt;メディア・ライブ&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="wiki.html" style="color: #fca311; font-weight: bold;"&gt;Wiki(限定)&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="index.html#join"&gt;お問い合わせ&lt;/a&gt;&lt;/li&gt;
+            &lt;/ul&gt;
+        &lt;/nav&gt;
+    &lt;/header&gt;
+
+    &lt;main class="blog-container"&gt;
+        &lt;article class="blog-article"&gt;
+            &lt;header class="article-header"&gt;
+                &lt;span class="article-date"&gt;【更新年月 例: 2026年6月 更新】&lt;/span&gt;
+                &lt;h1&gt;【ここに観測テーマのタイトルを記入 例: 宇宙に咲く巨大なひまわり銀河】&lt;/h1&gt;
+            &lt;/header&gt;
+
+            &lt;div class="article-body"&gt;
+                &lt;p&gt;ここに導入部分の短い文章（Xなどの反響、何を捉えた画像かなど）を記入します。&lt;/p&gt;
+
+                &lt;h2&gt;🌌 捉えられた最新の宇宙画像&lt;/h2&gt;
+                &lt;figure&gt;
+                    &lt;div class="dummy-img"&gt;【観測画像のプレースホルダー】&lt;/div&gt;
+                    &lt;figcaption&gt;画像クレジット：国立天文台(NAOJ) / すばる望遠鏡&lt;/figcaption&gt;
+                &lt;/figure&gt;
+
+                &lt;h2&gt;💡 やさしくわかる3つの解説ポイント&lt;/h2&gt;
+                &lt;p&gt;数式を使わずに、中高生でも頭の中でビジュアルが浮かび上がるように記述しましょう。&lt;/p>
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;strong&gt;ポイント1（何がすごいのか）：&lt;/strong&gt; 新しく判明した構造や発見の意義を解説します。&lt;/li&gt;
+                    &lt;li&gt;&lt;strong&gt;ポイント2（地球からの距離）：&lt;/strong&gt; 遠さを日常や歴史的なタイムスケールに例えてみます。&lt;/li&gt;
+                &lt;/ul&gt;
+            &lt;/div&gt;
+            
+            &lt;div style="text-align: center; margin-top: 50px;"&gt;
+                &lt;a href="monthly.html" class="btn"&gt;← 今月のすばる一覧へ戻る&lt;/a&gt;
+            &lt;/div&gt;
+        &lt;/article&gt;
+    &lt;/main&gt;
+
+    &lt;footer&gt;
+        &lt;div class="footer-sns"&gt;
+            &lt;a href="https://x.com" target="_blank"&gt;X (旧Twitter)&lt;/a&gt;
+            &lt;a href="https://instagram.com" target="_blank"&gt;Instagram&lt;/a&gt;
+            &lt;a href="media.html"&gt;YouTube / ライブ中継&lt;/a&gt;
+            &lt;a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;"&gt;(管理者ログイン)&lt;/a&gt;
+        </div>
+        &lt;p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.&lt;/p&gt;
+    &lt;/footer&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+</div>
+
+<div id="wiki-page-eventguide" class="wiki-subpage" style="display: none;" data-menu-category="イベント告知追加ガイド" data-menu-title="3.1 イベント告知追加手順">
+    <h1 class="wiki-article-title">🌟 「イベント告知」追加手順とステータス管理ガイド</h1>
+    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
+
+    <p>当サークルが企画するオンライン観望会、勉強会、また応援している宇宙・天文関連イベントの告知カードを管理・掲載するための手順です。</p>
+    
+    <h2>📋 追加・変更の手順フロー</h2>
+    <ul>
+        <li><strong>ステップ1：イベント詳細情報の取りまとめ</strong><br>
+        告知するイベントのタイトル、日時、会場または配信プラットフォーム（Zoom、YouTube Live等）、申し込み窓口のリンク（GoogleフォームやPeatix等）を準備します。</li>
+        <li><strong>ステップ2：管理者コンソール（admin.html）からの登録</strong><br>
+        管理者ログイン後、「🌟 イベント告知」タブを開き、以下の項目を入力します：<br>
+        ・<strong>イベントタイトル</strong>：分かりやすく魅力的なタイトル（例：夏の満天星空オンライン観望会！）<br>
+        ・<strong>開催日時</strong>：曜日や時間まで明確に（例：2026年7月11日（土）20:00 〜 21:30）<br>
+        ・<strong>開催場所 / 配信方法</strong>：参加者に分かりやすく（例：オンライン配信（Zoom / YouTube））<br>
+        ・<strong>受付状況</strong>：「参加受付中」「終了しました」「準備中」から現在のステータスを選択します。これによりデザインが自動で変化します。<br>
+        ・<strong>イベント詳細説明</strong>：見どころやタイムスケジュール、対象者、参加費用などを4〜5行程度で記述します。<br>
+        ・<strong>詳細ページのURL / HTMLファイル名</strong>：申し込み用フォーム（Googleフォーム等）や、より詳しい詳細特設ページのURLを入力します。</li>
+        <li><strong>ステップ3：登録と表示確認</strong><br>
+        「イベント告知を発行する」をクリックします。<a href="events.html" target="_blank">events.html</a>（イベント告知）を開き、正しく新イベントが追加されているか、また受付ステータスのバッジの色（「参加受付中」はオレンジの枠線と赤いバッジ、「終了しました」はグレーの枠線とバッジ）が正しく表示されているか確認します。</li>
+    </ul>
+</div>
+
+<div id="wiki-page-event-template" class="wiki-subpage" style="display: none;" data-menu-category="イベント告知追加ガイド" data-menu-title="3.2 公式HTMLテンプレート">
+    <h1 class="wiki-article-title">🌟 「イベント告知」詳細解説用HTMLテンプレート</h1>
+    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
+
+    <p>「イベント告知」カードから遷移させるための詳細解説・お申し込み特設ページ用テンプレートです。タイムテーブルや持ち物・諸注意などを一覧表示できるテーブル構造が含まれています。</p>
+
+    <pre>&lt;!DOCTYPE html&gt;
+&lt;html lang="ja"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;link rel="stylesheet" href="css/style.css"&gt;
+    &lt;title&gt;【イベント名】 | イベント告知 | CbS&lt;/title&gt;
+&lt;/head&gt;
+&lt;body class="bg-light"&gt;
+    &lt;header&gt;
+        &lt;div class="logo"&gt;&lt;a href="index.html"&gt;Connected by SUBARU(CbS)&lt;/a&gt;&lt;/div&gt;
+        &lt;nav&gt;
+            &lt;ul class="nav-menu"&gt;
+                &lt;li&gt;&lt;a href="index.html"&gt;Home&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="blog.html"&gt;Blog&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="monthly.html"&gt;今月のすばる&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="events.html"&gt;イベント告知&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="maunakea.html"&gt;マウナケア便り&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="members.html"&gt;メンバー紹介&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="media.html"&gt;メディア・ライブ&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="wiki.html" style="color: #fca311; font-weight: bold;"&gt;Wiki(限定)&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="index.html#join"&gt;お問い合わせ&lt;/a&gt;&lt;/li&gt;
+            &lt;/ul&gt;
+        &lt;/nav&gt;
+    &lt;/header&gt;
+
+    &lt;main class="blog-container"&gt;
+        &lt;article class="blog-article"&gt;
+            &lt;header class="article-header"&gt;
+                &lt;span class="article-date"&gt;【イベント開催日 例: 2026年7月11日（土）】&lt;/span&gt;
+                &lt;h1&gt;【イベントタイトル 例: 夏のオンライン星空観望会】&lt;/h1&gt;
+            &lt;/header&gt;
+
+            &lt;div class="article-body"&gt;
+                &lt;p&gt;ここにイベントの簡単な説明（企画の主旨や、中高生・一般など参加対象者へのメッセージ）を記入します。&lt;/p>
+
+                &lt;h2&gt;📅 開催概要&lt;/h2&gt;
+                &lt;div class="table-wrapper"&gt;
+                    &lt;table class="cost-table"&gt;
+                        &lt;tr&gt;
+                            &lt;th&gt;項目&lt;/th&gt;
+                            &lt;th&gt;内容&lt;/th&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td&gt;日時&lt;/td&gt;
+                            &lt;td&gt;2026年7月11日（土）20:00 〜 21:30&lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td&gt;参加費用&lt;/td&gt;
+                            &lt;td&gt;無料（事前登録制）&lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td&gt;配信方法&lt;/td&gt;
+                            &lt;td&gt;オンライン（Zoom webinar / YouTube Live）&lt;/td&gt;
+                        &lt;/tr&gt;
+                    &lt;/table&gt;
+                &lt;/div&gt;
+
+                &lt;h2&gt;🔭 当日のタイムスケジュール&lt;/h2&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;strong&gt;20:00 - 20:15：&lt;/strong&gt; オープニング（サークル紹介）&lt;/li&gt;
+                    &lt;li&gt;&lt;strong&gt;20:15 - 21:00：&lt;/strong&gt; マウナケア山頂カメラ中継＆メンバー解説&lt;/li&gt;
+                    &lt;li&gt;&lt;strong&gt;21:00 - 21:20：&lt;/strong&gt; 質問コーナー（Q&A機能を使用）&lt;/li&gt;
+                    &lt;li&gt;&lt;strong&gt;21:20 - 21:30：&lt;/strong&gt; アンケート・おしらせ、クロージング&lt;/li&gt;
+                &lt;/ul&gt;
+            &lt;/div&gt;
+            
+            &lt;div style="text-align: center; margin-top: 50px;"&gt;
+                &lt;a href="events.html" class="btn"&gt;← イベント一覧へ戻る&lt;/a&gt;
+            &lt;/div&gt;
+        &lt;/article&gt;
+    &lt;/main&gt;
+
+    &lt;footer&gt;
+        &lt;div class="footer-sns"&gt;
+            &lt;a href="https://x.com" target="_blank"&gt;X (旧Twitter)&lt;/a&gt;
+            &lt;a href="https://instagram.com" target="_blank"&gt;Instagram&lt;/a&gt;
+            &lt;a href="media.html"&gt;YouTube / ライブ中継&lt;/a&gt;
+            &lt;a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;"&gt;(管理者ログイン)&lt;/a&gt;
+        </div>
+        &lt;p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.&lt;/p>
+    &lt;/footer&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+</div>
+
+<div id="wiki-page-maunakeaguide" class="wiki-subpage" style="display: none;" data-menu-category="マウナケア便り追加ガイド" data-menu-title="4.1 マウナケア便り追加手順">
+    <h1 class="wiki-article-title">🌺 「マウナケア便り」追加手順とコラム執筆ガイド</h1>
+    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
+
+    <p>「マウナケア便り」は、すばる望遠鏡があるハワイ・マウナケア山頂のユニークな環境やハワイの伝統文化、天体観測の舞台裏などを親しみやすいエッセイ形式で紹介するコラムコーナーです。</p>
+    
+    <h2>📋 追加・変更の手順フロー</h2>
+    <ul>
+        <li><strong>ステップ1：コラムのネタ決めと執筆</strong><br>
+        「標高4,200mの高山病対策」「ハワイの伝統ナビゲーションと星」「主鏡はどうやって掃除する？」など、読者の知的好奇心をくすぐるテーマを設定して原稿を作成します。</li>
+        <li><strong>ステップ2：管理者コンソール（admin.html）からの登録</strong><br>
+        管理者ログイン後、「🌺 マウナケア便り」タブを開き、以下の項目を入力します：<br>
+        ・<strong>Vol</strong>：コラムの通し番号（例：Vol. 4）<br>
+        ・<strong>記事のタイトル</strong>：中身が気になるような見出し（例：山頂の寒さはどれくらい？研究者の防寒の工夫）<br>
+        ・<strong>画像プレースホルダー表示名</strong>：左側に表示されるアイキャッチ用の画像イメージ（例：雪の積もるドーム）<br>
+        ・<strong>本文の要約・抜粋</strong>：一覧画面に表示されるコラムのあらすじや導入文（3行程度）<br>
+        ・<strong>詳細ページのURL / HTMLファイル名</strong>：コラムの本文が書かれた詳細HTMLファイル（例：<code>maunakea-vol4.html</code>など）をアップロードし、そのファイル名またはURLを指定します。</li>
+        <li><strong>ステップ3：登録と表示確認</strong><br>
+        「コラム記事を発行する」をクリックします。<a href="maunakea.html" target="_blank">maunakea.html</a>（マウナケア便り）を開き、新コラムのカードが追加され、「記事を読む →」から執筆した本文ページへ正しく遷移するか確認してください。</li>
+    </ul>
+</div>
+
+<div id="wiki-page-maunakea-template" class="wiki-subpage" style="display: none;" data-menu-category="マウナケア便り追加ガイド" data-menu-title="4.2 公式HTMLテンプレート">
+    <h1 class="wiki-article-title">🌺 「マウナケア便り」詳細コラム用HTMLテンプレート</h1>
+    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
+
+    <p>「マウナケア便り」カードから「記事を読む →」をクリックした際に遷移させるための、コラム・読み物ページ用テンプレートです。エッセイを読みやすく区切るセクション見出しや写真用のタグが配置されています。</p>
+
+    <pre>&lt;!DOCTYPE html&gt;
+&lt;html lang="ja"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;link rel="stylesheet" href="css/style.css"&gt;
+    &lt;title&gt;【コラムタイトル】 | マウナケア便り | CbS&lt;/title&gt;
+&lt;/head&gt;
+&lt;body class="bg-light"&gt;
+    &lt;header&gt;
+        &lt;div class="logo"&gt;&lt;a href="index.html"&gt;Connected by SUBARU(CbS)&lt;/a&gt;&lt;/div&gt;
+        &lt;nav&gt;
+            &lt;ul class="nav-menu"&gt;
+                &lt;li&gt;&lt;a href="index.html"&gt;Home&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="blog.html"&gt;Blog&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="monthly.html"&gt;今月のすばる&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="events.html"&gt;イベント告知&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="maunakea.html"&gt;マウナケア便り&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="members.html"&gt;メンバー紹介&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="media.html"&gt;メディア・ライブ&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="wiki.html" style="color: #fca311; font-weight: bold;"&gt;Wiki(限定)&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="index.html#join"&gt;お問い合わせ&lt;/a&gt;&lt;/li&gt;
+            &lt;/ul&gt;
+        &lt;/nav&gt;
+    &lt;/header&gt;
+
+    &lt;main class="blog-container"&gt;
+        &lt;article class="blog-article"&gt;
+            &lt;header class="article-header"&gt;
+                &lt;span class="article-date"&gt;【コラム巻数 例: Vol. 4】&lt;/span&gt;
+                &lt;h1&gt;【ここにエッセイのタイトルを記入 例: 標高4,200メートルの山頂は過酷？】&lt;/h1&gt;
+            &lt;/header&gt;
+
+            &lt;div class="article-body"&gt;
+                &lt;p&gt;ここにコラムを読み進めたくなるような、短くキャッチーな導入（ハワイの空気や山頂の景色への疑問など）を記入します。&lt;/p>
+
+                &lt;h2&gt;🏔 山頂の研究者が受ける「高地順応」とは？&lt;/h2&gt;
+                &lt;p&gt;ここにコラムの1つ目の解説段落を記述します。写真素材がある場合は下の figure タグの中に格納して挿入します。&lt;/p>
+                
+                &lt;figure&gt;
+                    &lt;div class="dummy-img"&gt;【ここに風景写真などを配置】&lt;/div&gt;
+                    &lt;figcaption&gt;写真：雲海が広がる夕暮れ時のマウナケア山頂ドーム（©国立天文台）&lt;/figcaption&gt;
+                &lt;/figure>
+
+                &lt;h2&gt;🌺 ハワイの歴史と星たちの結びつき&lt;/h2&gt;
+                &lt;p&gt;ここに2つ目のトピックやエッセイとしてのまとめ段落を記述し、サークルメンバー独自の視点や感想を付け加えます。&lt;/p>
+            &lt;/div&gt;
+            
+            &lt;div style="text-align: center; margin-top: 50px;"&gt;
+                &lt;a href="maunakea.html" class="btn"&gt;← マウナケア便り一覧へ戻る&lt;/a&gt;
+            &lt;/div&gt;
+        &lt;/article&gt;
+    &lt;/main&gt;
+
+    &lt;footer&gt;
+        &lt;div class="footer-sns"&gt;
+            &lt;a href="https://x.com" target="_blank"&gt;X (旧Twitter)&lt;/a&gt;
+            &lt;a href="https://instagram.com" target="_blank"&gt;Instagram&lt;/a&gt;
+            &lt;a href="media.html"&gt;YouTube / ライブ中継&lt;/a&gt;
+            &lt;a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;"&gt;(管理者ログイン)&lt;/a&gt;
+        </div>
+        &lt;p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.&lt;/p>
+    &lt;/footer&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+</div>
+
+<div id="wiki-page-blogguide" class="wiki-subpage" style="display: none;" data-menu-category="ブログ追加ガイド" data-menu-title="5.1 ブログ追加手順の解説">
+    <h1 class="wiki-article-title">💻 新規ブログを自作HTMLで追加するための手順解説</h1>
+    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
+
+    <p>サークル「Connected by SUBARU (CbS)」のWebサイトでは、体験記や活動報告などをメンバー各自がオリジナルのHTMLファイル（自作ページ）として作成し、それらを公式サイトのブログ一覧に簡単に登録・追加することができます。</p>
+    <p>ブログの自作から登録完了までの基本的な作業フローは、以下の5つの手順に沿って行います：</p>
+    <ul>
+        <li><strong>ステップ1：本ページ内のHTMLテンプレートをコピーする</strong><br>
+        左メニューまたは目次から「公式HTMLテンプレート」を開き、コードをすべてコピーします。お使いのテキストエディタに貼り付け、好みのファイル名（例：<code>blog-shinchaku.html</code>）を付けてローカルPC環境に保存します。</li>
+        <li><strong>ステップ2：記事のテキストや見出しを自由に書き換える</strong><br>
+        テンプレート内の指定箇所（タイトル・日付・本文・写真の説明文など）をご自身の作成するコラム内容に書き換えます。見出しや段落は最初から見やすくデザインされているため、中身を差し替えるだけで自動的に整います。</li>
+        <li><strong>ステップ3：作成したファイルをWebサーバーへアップロードする</strong><br>
+        編集が完了したファイルを、サークルのWebサーバー上（<code>index.html</code>や<code>blog.html</code>と同じ同一階層、またはアップロード用の指定フォルダ）へ配置・アップロードします。</li>
+        <li><strong>ステップ4：コンテンツ管理システム（admin.html）から紐付けを行う</strong><br>
+        管理者用ログイン画面（<a href="admin.html" target="_blank">admin.html</a>）へ進み、管理パスワード（<code>cbsadmin2026</code>）を使ってログインします。上部タブの「📝 ブログ」を選択した状態で、以下の各入力項目を埋めます：<br>
+        ・<strong>記事タイトル</strong>：一覧に並ぶブログカードのタイトル（例：ハワイの夜空を見上げて）<br>
+        ・<strong>投稿日付</strong>：作成・公開時の日付（例：2026年5月22日）<br>
+        ・<strong>概要/紹介文</strong>：一覧画面で記事の簡単な予告となる1〜2行程度の紹介用テキスト<br>
+        ・<strong>詳細ページのURL / HTMLファイル名</strong>：ステップ3でサーバーにアップした自作のファイル名（例：<code>blog-shinchaku.html</code>、または外部に配置したURL）を入力します。</li>
+        <li><strong>ステップ5：登録内容を保存して確認する</strong><br>
+        「ブログを発行・更新する」ボタンを押すと保存が完了します。実際にブログ一覧ページ（<a href="blog.html" target="_blank">blog.html</a>）をブラウザで表示し、追加した記事カードが表示され、そこから「続きを読む →」をクリックした際に自作したページにリンクが繋がっているか確認してください。</li>
+    </ul>
+</div>
+
+<div id="wiki-page-template" class="wiki-subpage" style="display: none;" data-menu-category="ブログ追加ガイド" data-menu-title="5.2 公式HTMLテンプレート">
+    <h1 class="wiki-article-title">📸 コピペしてすぐに使える写真付き公式HTMLテンプレート</h1>
+    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
+
+    <p>以下のソースコードは、CbS共通のスタイルシート（<code>css/style.css</code>）が最初から読み込まれており、統一感のあるすっきりとした段組みやフォントスタイルで表示されるよう設計された完全なHTMLテンプレートです。余分な記述は自由に削除したりカスタマイズしてご使用ください。</p>
+
+    <pre>&lt;!DOCTYPE html&gt;
+&lt;html lang="ja"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;link rel="stylesheet" href="css/style.css"&gt;
+    &lt;title&gt;【ここに記事のタイトルを記入】 | CbS&lt;/title&gt;
+&lt;/head&gt;
+&lt;body class="bg-light"&gt;
+    &lt;header&gt;
+        &lt;div class="logo"&gt;&lt;a href="index.html"&gt;Connected by SUBARU(CbS)&lt;/a&gt;&lt;/div&gt;
+        &lt;nav&gt;
+            &lt;ul class="nav-menu"&gt;
+                &lt;li&gt;&lt;a href="index.html"&gt;Home&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="blog.html"&gt;Blog&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="monthly.html"&gt;今月のすばる&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="events.html"&gt;イベント告知&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="maunakea.html"&gt;マウナケア便り&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="members.html"&gt;メンバー紹介&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="media.html"&gt;メディア・ライブ&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="wiki.html" style="color: #fca311; font-weight: bold;"&gt;Wiki(限定)&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="index.html#join"&gt;お問い合わせ&lt;/a&gt;&lt;/li&gt;
+            &lt;/ul&gt;
+        &lt;/nav&gt;
+    &lt;/header&gt;
+
+    &lt;main class="blog-container"&gt;
+        &lt;article class="blog-article"&gt;
+            &lt;header class="article-header"&gt;
+                &lt;span class="article-date"&gt;【ここに投稿日付を記入 例: 2026年5月22日】&lt;/span&gt;
+                &lt;h1&gt;【ここに記事のメインタイトルを記入】&lt;/h1&gt;
+            &lt;/header&gt;
+
+            &lt;div class="article-body"&gt;
+                &lt;p&gt;ここに導入部分の文章を記入します。記事全体がどのような内容について書かれているか要約や見どころを紹介してください。&lt;/p>
+
+                &lt;h2&gt;大見出し（h2）の解説項目&lt;/h2&gt;
+                &lt;p&gt;本文を記入します。専門的な言葉をなるべく使わずに、ビジュアルが想起しやすい表現で作成することがサークル広報の方針です。&lt;/p>
+
+                &lt;!-- 写真付きレイアウト --&gt;
+                &lt;figure&gt;
+                    &lt;div class="dummy-img"&gt;【ここに仮写真の説明・画像を配置 例: 満天の星空】&lt;/div&gt;
+                    &lt;figcaption&gt;写真1：ハワイ・マウナケア山頂ドーム付近から捉えた満天の星空と天の川&lt;/figcaption&gt;
+                &lt;/figure&gt;
+
+                &lt;h3&gt;小見出し・補足項目（h3）の解説&lt;/h3&gt;
+                &lt;p&gt;より細かなチェックポイントやポイントを記載したい場合は、以下の箇条書き（ul/li）の構造を使用すると便利です。&lt;/p>
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;strong&gt;重要なトピック：&lt;/strong&gt; 具体的な説明テキストをここに配置します。&lt;/li&gt;
+                    &lt;li&gt;&lt;strong&gt;重要なトピックその2：&lt;/strong&gt; 同様に説明テキストを追記します。&lt;/li>
+                &lt;/ul&gt;
+
+                &lt;!-- テーブルレイアウト --&gt;
+                &lt;h2&gt;費用一覧やタイムスケジュールなど（必要に応じて使用）&lt;/h2&gt;
+                &lt;div class="table-wrapper"&gt;
+                    &lt;table class="cost-table"&gt;
+                        &lt;tr&gt;
+                            &lt;th&gt;項目名&lt;/th&gt;
+                            &lt;th&gt;内容詳細&lt;/th&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td&gt;航空運賃などの補助&lt;/td&gt;
+                            &lt;td&gt;一部航空券の支援制度あり&lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td&gt;必須準備物&lt;/td&gt;
+                            &lt;td&gt;パスポート、防寒用の厚手の衣服、高山病対策グッズ&lt;/td&gt;
+                        &lt;/tr&gt;
+                    &lt;/table&gt;
+                &lt;/div&gt;
+
+                &lt;h2&gt;まとめ・今後の展望&lt;/h2&gt;
+                &lt;p&gt;記事のまとめ部分をここに記載します。サークルとしてのこれからの活動に向けた決意や、応援メッセージへの感謝などを書き添えてクローズします。&lt;/p>
+            &lt;/div&gt;
+            
+            &lt;div style="text-align: center; margin-top: 50px;"&gt;
+                &lt;a href="blog.html" class="btn"&gt;← Blog一覧へ戻る&lt;/a&gt;
+            &lt;/div&gt;
+        &lt;/article&gt;
+    &lt;/main&gt;
+
+    &lt;footer&gt;
+        &lt;div class="footer-sns"&gt;
+            &lt;a href="https://x.com" target="_blank"&gt;X (旧Twitter)&lt;/a&gt;
+            &lt;a href="https://instagram.com" target="_blank"&gt;Instagram&lt;/a&gt;
+            &lt;a href="media.html"&gt;YouTube / ライブ中継&lt;/a&gt;
+            &lt;a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;"&gt;(管理者ログイン)&lt;/a&gt;
+        </div>
+        <p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.</p>
+        <p><small>※当サークルは国立天文台を応援する有志のボランティアサークルです。</small></p>
+    </footer>
+</body>
+</html></pre>
+</div>
+
+<div id="wiki-page-edit-points" class="wiki-subpage" style="display: none;" data-menu-category="ブログ追加ガイド" data-menu-title="5.3 編集のポイント">
+    <h1 class="wiki-article-title">🛠 編集におけるポイント</h1>
+    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
+
+    <ul>
+        <li><strong><code>dummy-img</code> クラスの使用：</strong> 写真の用意ができるまでのプレースホルダーとして便利です。実際に本番の写真を組み込む際は、<code>&lt;div class="dummy-img"&gt;【写真のタイトル】&lt;/div&gt;</code> を <code>&lt;img src="images/shashin.jpg" alt="天体" style="width:100%; border-radius:8px;"&gt;</code> の形式に丸ごと差し替えてください。</li>
+        <li><strong>見出しタグの階層化：</strong> 記事の可読性を上げるため、最大のブロックには <code>&lt;h2&gt;</code>、その中の細かいトピックスには <code>&lt;h3&gt;</code> を使うことで、CSSに規定されたスタイリッシュな左ライン装飾や破線が自動で当たります。</li>
+        <li><strong>新しいサブページをサイドメニューに追加する手順：</strong><br>
+        「編集」タブを開き、HTMLソースの一番最後（一番外側の閉じタグ <code>&lt;/div&gt;</code> の直前など）に、以下のように <code>data-menu-category</code>（大分類の見出し名）と <code>data-menu-title</code>（表示されるリンク名）を記述した <code>div</code> 構造を追加して保存します。<br>
+        これだけで、左側のサイドメニュー（および新規ページ自体）が自動的に生成されて追加されます。
+        <pre>&lt;div id="wiki-page-newsection" class="wiki-subpage" style="display: none;" data-menu-category="応用コラム" data-menu-title="新しい新ページ"&gt;
+    &lt;h1 class="wiki-article-title"&gt;新規作成したコンテンツのタイトル&lt;/h1&gt;
+    &lt;p&gt;ここに本文を書き込みます...&lt;/p&gt;
+&lt;/div&gt;</pre>
+        </li>
+    </ul>
+</div>
+    `;
+
+    // ノート議論初期コメント（空で初期化）
+    const defaultNoteData = {
+        "topic-blog": [],
+        "topic-rules": [],
+        "topic-todo": [],
+        "topic-bugs": []
+    };
+
+    let activeSubpageId = "wiki-page-basic"; // 現在アクティブなサブページのID
+    let currentNoteTopic = "topic-blog"; // ノート（掲示板）の現在のアクティブトピック
+
+    const WIKI_VERSION_KEY = "cbs_wiki_version";
+    const CURRENT_WIKI_VERSION = "2026_v12"; // バージョンを更新して追加したテンプレートを強制同期させます
+
+    if (sessionStorage.getItem("wiki_authenticated") === "true") {
+        showWiki();
+    }
+
+    function unlockWiki(event) {
+        event.preventDefault();
+        const passInput = document.getElementById("wiki-password").value;
+        const correctPassword = "subaru2026"; 
+
+        if (passInput === correctPassword) {
+            sessionStorage.setItem("wiki_authenticated", "true");
+            showWiki();
+        } else {
+            document.getElementById("wiki-error").style.display = "block";
+        }
+    }
+
+    function showWiki() {
+        document.getElementById("lock-screen").style.display = "none";
+        document.getElementById("wiki-main-content").style.display = "flex";
+        
+        const storedVersion = localStorage.getItem(WIKI_VERSION_KEY);
+        
+        if (storedVersion !== CURRENT_WIKI_VERSION) {
+            localStorage.setItem("cbs_wiki_content", defaultWikiContent);
+            localStorage.setItem(WIKI_VERSION_KEY, CURRENT_WIKI_VERSION);
+            localStorage.removeItem("cbs_wiki_history");
+            localStorage.setItem("cbs_wiki_notes", JSON.stringify(defaultNoteData));
+        }
+
+        initWikiHistory();
+        renderWikiBody();
+    }
+
+    function initWikiHistory() {
+        if (!localStorage.getItem("cbs_wiki_history")) {
+            const initialContent = localStorage.getItem("cbs_wiki_content") || defaultWikiContent;
+            addWikiHistory(initialContent, "初期作成（システムデフォルト）");
+        }
+    }
+
+    function addWikiHistory(content, comment) {
+        let history = [];
+        try {
+            const stored = localStorage.getItem("cbs_wiki_history");
+            if (stored) history = JSON.parse(stored);
+        } catch (e) {
+            history = [];
+        }
+
+        const nextRevision = history.length > 0 ? history[0].revision + 1 : 1;
+        const now = new Date();
+        const dateString = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+
+        const newRevision = {
+            revision: nextRevision,
+            date: dateString,
+            content: content,
+            comment: comment || "コメントなし",
+            size: content.length
+        };
+
+        history.unshift(newRevision);
+        localStorage.setItem("cbs_wiki_history", JSON.stringify(history));
+    }
+
+    function renderWikiBody() {
+        const bodyContent = localStorage.getItem("cbs_wiki_content") || defaultWikiContent;
+        document.getElementById("wiki-rendered-body").innerHTML = bodyContent;
+        
+        generateWikiSidebar();
+        showWikiSubpage(activeSubpageId, false);
+    }
+
+    function generateWikiSidebar() {
+        const sidebar = document.getElementById("wiki-sidebar-dynamic");
+        if (!sidebar) return;
+
+        sidebar.innerHTML = '<div class="wiki-sidebar-logo">CbS Wiki Nav</div>';
+
+        const subpages = document.querySelectorAll(".wiki-subpage");
+        const categories = {};
+
+        subpages.forEach(page => {
+            const categoryName = page.getAttribute("data-menu-category") || "その他";
+            const menuTitle = page.getAttribute("data-menu-title") || page.id;
+            const pageId = page.id;
+
+            if (!categories[categoryName]) {
+                categories[categoryName] = [];
+            }
+            categories[categoryName].push({ id: pageId, title: menuTitle });
+        });
+
+        for (const categoryName in categories) {
+            const h3 = document.createElement("h3");
+            h3.textContent = categoryName;
+            sidebar.appendChild(h3);
+
+            const ul = document.createElement("ul");
+            categories[categoryName].forEach(item => {
+                const li = document.createElement("li");
+                const a = document.createElement("a");
+                a.href = "javascript:void(0)";
+                a.setAttribute("onclick", `showWikiSubpage('${item.id}')`);
+                a.textContent = item.title;
+                li.appendChild(a);
+                ul.appendChild(li);
+            });
+            sidebar.appendChild(ul);
+        }
+
+        const extH3 = document.createElement("h3");
+        extH3.textContent = "外部リンク";
+        sidebar.appendChild(extH3);
+
+        const extUl = document.createElement("ul");
+        extUl.innerHTML = `
+            <li><a href="admin.html" target="_blank">管理画面へ ↗</a></li>
+            <li><a href="index.html">CbS サイトへ戻る ↗</a></li>
+        `;
+        sidebar.appendChild(extUl);
+    }
+
+    function renderWikiHistoryTable() {
+        const tbody = document.querySelector("#wiki-history-table tbody");
+        if (!tbody) return;
+
+        tbody.innerHTML = "";
+
+        let history = [];
+        try {
+            const stored = localStorage.getItem("cbs_wiki_history");
+            if (stored) history = JSON.parse(stored);
+        } catch (e) {
+            history = [];
+        }
+
+        if (history.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#888; padding:20px;">保存されたリビジョンはありません。</td></tr>`;
+            return;
+        }
+
+        history.forEach((rev, idx) => {
+            const tr = document.createElement("tr");
+            tr.style.borderBottom = "1px solid #eaecf0";
+
+            const isLatest = idx === 0;
+            const restoreButtonHTML = isLatest 
+                ? `<span style="color: #27ae60; font-weight: bold; font-size: 0.8rem;">最新版</span>`
+                : `<button onclick="restoreWikiRevision(${rev.revision})" class="btn" style="padding: 4px 10px; font-size: 0.75rem; background-color: #34495e; color: #fff; border-radius: 3px;">この版に復元</button>`;
+
+            tr.innerHTML = `
+                <td style="padding: 12px; text-align: center; font-weight: bold; color: #555;">r${rev.revision}</td>
+                <td style="padding: 12px; color: #202122;">${rev.date}</td>
+                <td style="padding: 12px; color: #202122; font-style: italic;">${rev.comment}</td>
+                <td style="padding: 12px; text-align: right; color: #555;">${rev.size.toLocaleString()} 文字</td>
+                <td style="padding: 12px; text-align: center;">${restoreButtonHTML}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function restoreWikiRevision(revNo) {
+        if (!confirm(`本当にリビジョン r${revNo} の状態へWikiを復元しますか？\n（※現在の最新版も履歴に保存されているため、いつでも再度ロールバックできます）`)) return;
+
+        let history = [];
+        try {
+            const stored = localStorage.getItem("cbs_wiki_history");
+            if (stored) history = JSON.parse(stored);
+        } catch (e) {
+            return;
+        }
+
+        const targetRev = history.find(r => r.revision === revNo);
+        if (!targetRev) {
+            alert("対象のリビジョンデータが見つかりませんでした。");
+            return;
+        }
+
+        localStorage.setItem("cbs_wiki_content", targetRev.content);
+        addWikiHistory(targetRev.content, `r${revNo} の状態へ復元（ロールバック）`);
+
+        alert(`リビジョン r${revNo} の状態へ復元が完了しました。`);
+        activeSubpageId = "wiki-page-basic";
+        renderWikiBody();
+    }
+
+    // ==========================================
+    // ノート（議論掲示板）の制御システム
+    // ==========================================
+
+    function switchNoteTopic(topicId) {
+        currentNoteTopic = topicId;
+
+        const topics = ['topic-blog', 'topic-rules', 'topic-todo', 'topic-bugs'];
+        topics.forEach(t => {
+            const btn = document.getElementById(`btn-${t}`);
+            if (btn) {
+                if (t === topicId) {
+                    btn.style.backgroundColor = '#0b132b';
+                    btn.style.color = '#fff';
+                } else {
+                    btn.style.backgroundColor = '#e2e8f0';
+                    btn.style.color = '#4a5568';
+                }
+            }
+        });
+
+        const topicTitles = {
+            'topic-blog': '💬 ブログ企画や新規記事のネタ出し・相談',
+            'topic-rules': '⚖ サークル内ガイドラインや運営ルールの見直し議論',
+            'topic-todo': '📅 イベント運営や進捗のTODO管理',
+            'topic-bugs': '⚙ Wiki自体の不具合や要望の報告'
+        };
+        document.getElementById("note-topic-title").innerText = topicTitles[topicId];
+
+        renderNoteTopic();
+    }
+
+    // 選択肢の順序を「匿名メンバー」が先頭に来るように設定する処理
+    function populateParentCommentAuthors(membersList) {
+        const select = document.getElementById("comment-author");
+        if (!select) return;
+
+        const currentVal = select.value;
+        select.innerHTML = "";
+
+        // 匿名メンバーのオプションを最上部（デフォルト）に配置
+        const anonOpt = document.createElement("option");
+        anonOpt.value = "匿名メンバー";
+        anonOpt.textContent = "匿名メンバー";
+        select.appendChild(anonOpt);
+
+        // 次に個別メンバーのオプションを配置
+        membersList.forEach(mem => {
+            const opt = document.createElement("option");
+            opt.value = mem.name;
+            opt.textContent = mem.name;
+            select.appendChild(opt);
+        });
+
+        if (currentVal) {
+            select.value = currentVal;
+        }
+    }
+
+    function renderNoteTopic() {
+        const container = document.getElementById("note-threads-container");
+        if (!container) return;
+
+        container.innerHTML = "";
+
+        let membersList = [];
+        try {
+            const storedMembers = localStorage.getItem("cbs_members_posts");
+            if (storedMembers) {
+                membersList = JSON.parse(storedMembers);
+            }
+        } catch (e) {
+            membersList = [];
+        }
+
+        if (!membersList || membersList.length === 0) {
+            membersList = [
+                { name: "四本瑞樹 (青山学院大)" },
+                { name: "横山史織 (日大)" },
+                { name: "髙橋恵吾 (東北大)" },
+                { name: "落合優名 (琉球大)" },
+                { name: "川田匠人 (鹿児島大)" },
+                { name: "高森碧 (京都産業大)" }
+            ];
+        }
+
+        populateParentCommentAuthors(membersList);
+
+        // 返信フォーム側の選択肢も、匿名メンバーが先頭に来るようにHTML文字列を生成
+        let selectOptionsHTML = `<option value="匿名メンバー">匿名メンバー</option>`;
+        membersList.forEach(mem => {
+            selectOptionsHTML += `<option value="${mem.name}">${mem.name}</option>`;
+        });
+
+        let notes = {};
+        try {
+            const storedNotes = localStorage.getItem("cbs_wiki_notes");
+            notes = storedNotes ? JSON.parse(storedNotes) : defaultNoteData;
+        } catch (e) {
+            notes = defaultNoteData;
+        }
+
+        const topicComments = notes[currentNoteTopic] || [];
+
+        if (topicComments.length === 0) {
+            container.innerHTML = `<div style="text-align:center; color:#888; padding: 40px; background:#fff; border:1px solid #a2a9b1; border-radius:4px;">このトピックにはまだコメントがありません。最初のコメントを投稿してみましょう！</div>`;
+            return;
+        }
+
+        const sortedComments = [...topicComments].sort((a, b) => {
+            return new Date(b.date) - new Date(a.date);
+        });
+
+        sortedComments.forEach(comment => {
+            const threadDiv = document.createElement("div");
+            threadDiv.style.background = "#fff";
+            threadDiv.style.border = "1px solid #a2a9b1";
+            threadDiv.style.borderRadius = "4px";
+            threadDiv.style.padding = "20px";
+            threadDiv.style.marginBottom = "20px";
+            threadDiv.style.boxShadow = "0 2px 5px rgba(0,0,0,0.02)";
+
+            const avatarChar = comment.author.charAt(0);
+
+            let repliesHTML = "";
+            if (comment.replies && comment.replies.length > 0) {
+                const sortedReplies = [...comment.replies].sort((a, b) => {
+                    return new Date(a.date) - new Date(b.date);
+                });
+
+                repliesHTML = `<div style="margin-left: 50px; margin-top: 15px; border-left: 2px solid #eaecf0; padding-left: 15px;">`;
+                sortedReplies.forEach(reply => {
+                    const rAvatar = reply.author.charAt(0);
+                    repliesHTML += `
+                        <div style="display: flex; gap: 12px; margin-bottom: 12px; font-size: 0.85rem;">
+                            <div style="width: 28px; height: 28px; border-radius: 50%; background-color: #34495e; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.75rem; flex-shrink: 0;">${rAvatar}</div>
+                            <div>
+                                <div style="display: flex; gap: 8px; align-items: baseline;">
+                                    <strong style="color: #000;">${reply.author}</strong>
+                                    <span style="color: #606266; font-size: 0.75rem;">${reply.date}</span>
+                                </div>
+                                <p style="color: #202122; margin-top: 3px; line-height: 1.4; white-space: pre-wrap;">${reply.text}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+                repliesHTML += `</div>`;
+            }
+
+            threadDiv.innerHTML = `
+                <!-- 親コメント部 -->
+                <div style="display: flex; gap: 15px;">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background-color: #0b132b; color: #fca311; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem; flex-shrink: 0;">${avatarChar}</div>
+                    <div style="flex-grow: 1;">
+                        <div style="display: flex; gap: 10px; align-items: baseline;">
+                            <strong style="color: #000; font-size: 0.9rem;">${comment.author}</strong>
+                            <span style="color: #606266; font-size: 0.75rem;">${comment.date}</span>
+                        </div>
+                        <p style="color: #202122; margin-top: 5px; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap;">${comment.text}</p>
+                        
+                        <!-- 返信トグルボタン -->
+                        <div style="margin-top: 8px;">
+                            <button onclick="toggleReplyForm('${comment.id}')" style="background: none; border: none; color: #0645ad; font-size: 0.8rem; cursor: pointer; padding: 0; font-weight: bold; display: flex; align-items: center; gap: 5px;">
+                                ↩ 返信する
+                            </button>
+                        </div>
+
+                        <!-- 返信入力エリア -->
+                        <div id="reply-form-${comment.id}" style="display: none; background: #f8f9fa; border: 1px solid #c8ccd1; padding: 15px; border-radius: 4px; margin-top: 15px;">
+                            <h4 style="margin-bottom: 8px; font-size: 0.8rem; color: #0b132b;">この発言に返信する：</h4>
+                            <div style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center; flex-wrap: wrap;">
+                                <label style="font-size: 0.8rem; font-weight: bold;">返信者：</label>
+                                <select id="reply-author-${comment.id}" style="padding: 4px 10px; border: 1px solid #a2a9b1; border-radius: 3px; font-size: 0.8rem; background: #fff;">
+                                    ${selectOptionsHTML}
+                                </select>
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <textarea id="reply-text-${comment.id}" rows="2" placeholder="返信内容を入力してください..." style="width: 100%; font-size: 0.8rem; padding: 8px; border: 1px solid #a2a9b1; border-radius: 3px; resize: vertical;"></textarea>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="postReplyComment('${comment.id}')" class="btn" style="background-color: #0645ad; color: #fff; font-size: 0.75rem; padding: 4px 12px; border-radius: 3px;">返信を投稿</button>
+                                <button onclick="toggleReplyForm('${comment.id}')" class="btn" style="background-color: #fff; color: #202122; border: 1px solid #a2a9b1; font-size: 0.75rem; padding: 4px 12px; border-radius: 3px;">キャンセル</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 返信リスト部 -->
+                ${repliesHTML}
+            `;
+            container.appendChild(threadDiv);
+        });
+    }
+
+    function toggleReplyForm(commentId) {
+        const form = document.getElementById(`reply-form-${commentId}`);
+        if (form) {
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+
+    function postParentComment(event) {
+        event.preventDefault();
+        const author = document.getElementById("comment-author").value;
+        const text = document.getElementById("comment-text").value.trim();
+
+        if (!text) return;
+
+        let notes = {};
+        try {
+            const stored = localStorage.getItem("cbs_wiki_notes");
+            notes = stored ? JSON.parse(stored) : defaultNoteData;
+        } catch (e) {
+            notes = defaultNoteData;
+        }
+
+        const now = new Date();
+        const dateString = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+
+        const newComment = {
+            id: "cbs_note_" + Date.now(),
+            author: author,
+            text: text,
+            date: dateString,
+            replies: []
+        };
+
+        if (!notes[currentNoteTopic]) {
+            notes[currentNoteTopic] = [];
+        }
+
+        notes[currentNoteTopic].push(newComment);
+        localStorage.setItem("cbs_wiki_notes", JSON.stringify(notes));
+
+        document.getElementById("comment-text").value = "";
+        renderNoteTopic();
+    }
+
+    function postReplyComment(commentId) {
+        const author = document.getElementById(`reply-author-${commentId}`).value;
+        const text = document.getElementById(`reply-text-${commentId}`).value.trim();
+
+        if (!text) return;
+
+        let notes = {};
+        try {
+            const stored = localStorage.getItem("cbs_wiki_notes");
+            notes = stored ? JSON.parse(stored) : defaultNoteData;
+        } catch (e) {
+            notes = defaultNoteData;
+        }
+
+        const now = new Date();
+        const dateString = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+
+        const newReply = {
+            id: "cbs_reply_" + Date.now(),
+            author: author,
+            text: text,
+            date: dateString
+        };
+
+        const comments = notes[currentNoteTopic] || [];
+        const parentComment = comments.find(c => c.id === commentId);
+
+        if (parentComment) {
+            if (!parentComment.replies) parentComment.replies = [];
+            parentComment.replies.push(newReply);
+            localStorage.setItem("cbs_wiki_notes", JSON.stringify(notes));
+        }
+
+        renderNoteTopic();
+    }
+
+    function lockWiki() {
+        sessionStorage.removeItem("wiki_authenticated");
+        sessionStorage.removeItem("wiki_editor_authenticated");
+        location.reload();
+    }
+
+    function switchWikiTab(mode) {
+        document.getElementById("tab-view").classList.remove("active");
+        document.getElementById("tab-action-view").classList.remove("active");
+        document.getElementById("tab-action-edit").classList.remove("active");
+        document.getElementById("tab-action-history").classList.remove("active");
+        document.getElementById("tab-note").classList.remove("active");
+
+        if (mode === 'view') {
+            document.getElementById("tab-view").classList.add("active");
+            document.getElementById("tab-action-view").classList.add("active");
+
+            document.getElementById("wiki-view-panel").style.display = "block";
+            document.getElementById("wiki-edit-panel").style.display = "none";
+            document.getElementById("wiki-history-panel").style.display = "none";
+            document.getElementById("wiki-note-panel").style.display = "none";
+        } else if (mode === 'edit') {
+            document.getElementById("tab-action-edit").classList.add("active");
+
+            document.getElementById("wiki-view-panel").style.display = "none";
+            document.getElementById("wiki-edit-panel").style.display = "block";
+            document.getElementById("wiki-history-panel").style.display = "none";
+            document.getElementById("wiki-note-panel").style.display = "none";
+
+            checkEditorAuth();
+        } else if (mode === 'history') {
+            document.getElementById("tab-action-history").classList.add("active");
+
+            document.getElementById("wiki-view-panel").style.display = "none";
+            document.getElementById("wiki-edit-panel").style.display = "none";
+            document.getElementById("wiki-history-panel").style.display = "block";
+            document.getElementById("wiki-note-panel").style.display = "none";
+
+            renderWikiHistoryTable();
+        } else if (mode === 'note') {
+            document.getElementById("tab-note").classList.add("active");
+
+            document.getElementById("wiki-view-panel").style.display = "none";
+            document.getElementById("wiki-edit-panel").style.display = "none";
+            document.getElementById("wiki-history-panel").style.display = "none";
+            document.getElementById("wiki-note-panel").style.display = "block";
+
+            document.querySelectorAll('.wiki-sidebar a').forEach(link => {
+                link.style.fontWeight = 'normal';
+                link.style.color = '#0645ad';
+            });
+
+            renderNoteTopic();
+        }
+    }
+
+    function showWikiSubpage(pageId, shouldScroll = true) {
+        activeSubpageId = pageId;
+        
+        switchWikiTab('view');
+        
+        document.querySelectorAll('.wiki-subpage').forEach(page => {
+            page.style.display = 'none';
+        });
+        
+        const target = document.getElementById(pageId);
+        if (target) {
+            target.style.display = 'block';
+        }
+        
+        document.querySelectorAll('.wiki-sidebar a').forEach(link => {
+            link.style.fontWeight = 'normal';
+            link.style.color = '#0645ad';
+        });
+        const activeLink = document.querySelector(`.wiki-sidebar a[onclick*="${pageId}"]`);
+        if (activeLink) {
+            activeLink.style.fontWeight = 'bold';
+            activeLink.style.color = '#202122';
+        }
+
+        if (shouldScroll) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function checkEditorAuth() {
+        const isAuth = sessionStorage.getItem("wiki_editor_authenticated") === "true";
+        if (isAuth) {
+            document.getElementById("edit-lock-box").style.display = "none";
+            document.getElementById("edit-textarea-container").style.display = "block";
+            
+            document.getElementById("wiki-editor-raw").value = localStorage.getItem("cbs_wiki_content") || defaultWikiContent;
+        } else {
+            document.getElementById("edit-lock-box").style.display = "block";
+            document.getElementById("edit-textarea-container").style.display = "none";
+        }
+    }
+
+    function unlockEditor() {
+        const pass = document.getElementById("edit-password").value;
+        const correctEditPass = "swiftgo55"; 
+
+        if (pass === correctEditPass) {
+            sessionStorage.setItem("wiki_editor_authenticated", "true");
+            document.getElementById("edit-error").style.display = "none";
+            checkEditorAuth();
+        } else {
+            document.getElementById("edit-error").style.display = "block";
+        }
+    }
+
+    function saveWikiContent() {
+        const editedContent = document.getElementById("wiki-editor-raw").value;
+        
+        const commentInput = prompt("今回の編集内容の要約を入力してください：\n（例: 〇〇ページの追加、誤字の修正）", "");
+        
+        if (commentInput === null) return;
+
+        const finalComment = commentInput.trim() || "有志メンバーによる編集";
+
+        localStorage.setItem("cbs_wiki_content", editedContent);
+        addWikiHistory(editedContent, finalComment);
+
+        alert("変更がWikiに反映され、変更履歴に記録されました。");
+        renderWikiBody();
+    }
+    </script>
+</body>
+</html>
