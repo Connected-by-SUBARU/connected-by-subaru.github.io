@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マウナケア便り | Connected by SUBARU(CbS)</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo"><a href="index.html">Connected by SUBARU(CbS)</a></div>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="monthly.html">今月のすばる</a></li>
+                <li><a href="events.html">イベント告知</a></li>
+                <li><a href="maunakea.html">マウナケア便り</a></li>
+                <li><a href="members.html">メンバー紹介</a></li>
+                <li><a href="media.html">メディア・ライブ</a></li>
+                <li><a href="wiki.html" style="color: #fca311; font-weight: bold;">Wiki(限定)</a></li>
+                <li><a href="index.html#join">お問い合わせ</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="page-header bg-dark">
+        <h1>マウナケア便り</h1>
+        <p>ハワイの気候や文化、望遠鏡の仕組みを親しみやすく紹介</p>
+    </section>
+
+    <section class="section">
+        <div id="maunakea-container" class="article-list" style="max-width: 800px; margin: 0 auto; text-align: left;">
+            <!-- JavaScriptにて動的挿入 -->
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-sns">
+            <a href="https://x.com" target="_blank">X (旧Twitter)</a>
+            <a href="https://instagram.com" target="_blank">Instagram</a>
+            <a href="media.html">YouTube / ライブ中継</a>
+            <a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;">(管理者ログイン)</a>
+        </div>
+        <p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.</p>
+        <p><small>※当サークルは国立天文台を応援する有志のボランティアサークルです。</small></p>
+    </footer>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const defaultMaunakea = [
+            { id: "default-mk-3", vol: "Vol. 3", title: "標高4,200mの世界！空気が薄いとどうなる？", imgText: "（山の風景）", desc: "すばる望遠鏡があるマウナケア山頂は、富士山よりも高い場所にあります。空気が地上の約6割しかない環境で、研究者たちはどのように観測をしているのでしょうか？高山病対策の裏側に迫ります。", content: "#" },
+            { id: "default-mk-2", vol: "Vol. 2", title: "ハワイの伝統文化と「星」の深いつながり", imgText: "（ハワイの星空）", desc: "古代ポリネシアの人々は、羅針盤を持たずに星の光だけを頼りにハワイの島々へ辿り着いたと言われています。「ホクレア号」のエピソードなど、ハワイ文化と星のロマンチックな関係をご紹介。", content: "#" },
+            { id: "default-mk-1", vol: "Vol. 1", title: "直径8.2メートルの巨大な鏡、どうやって洗うの？", imgText: "（望遠鏡の鏡）", desc: "望遠鏡の命とも言える「主鏡」。少しのチリや汚れも許されないこの巨大な鏡を、実は現地スタッフが定期的に大掛かりな作業で洗浄しています。その驚きの洗浄方法とは！？", content: "#" }
+        ];
+
+        // キャッシュクリア・同期用キー
+        const VERSION_KEY = "cbs_site_version";
+        const CURRENT_VERSION = "2026_v10";
+
+        const storedVersion = localStorage.getItem(VERSION_KEY);
+        if (storedVersion !== CURRENT_VERSION) {
+            localStorage.setItem('cbs_maunakea_posts', JSON.stringify(defaultMaunakea));
+            localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+            location.reload();
+            return;
+        }
+
+        if (!localStorage.getItem('cbs_maunakea_posts')) {
+            localStorage.setItem('cbs_maunakea_posts', JSON.stringify(defaultMaunakea));
+        }
+
+        let mkList = [];
+        try {
+            mkList = JSON.parse(localStorage.getItem('cbs_maunakea_posts'));
+        } catch (e) {
+            mkList = defaultMaunakea;
+        }
+
+        const container = document.getElementById("maunakea-container");
+        container.innerHTML = "";
+
+        mkList.forEach(item => {
+            const article = document.createElement("article");
+            article.style.background = "#fff";
+            article.style.padding = "20px";
+            article.style.borderRadius = "8px";
+            article.style.marginBottom = "20px";
+            article.style.boxShadow = "0 4px 6px rgba(0,0,0,0.05)";
+            article.style.display = "flex";
+            article.style.gap = "20px";
+            article.style.flexWrap = "wrap";
+
+            // 登録されたURL（content）を設定。空の場合はデフォルト「#」に設定します
+            const postLink = item.content || "#";
+
+            article.innerHTML = `
+                <div class="dummy-img" style="width: 200px; height: 150px; flex-shrink: 0; margin-bottom: 0;">${item.imgText}</div>
+                <div style="flex: 1; min-width: 250px;">
+                    <span style="color: #888; font-size: 0.9rem;">${item.vol}</span>
+                    <h3 style="margin: 5px 0 10px; color: #0b132b;">${item.title}</h3>
+                    <p style="font-size: 0.95rem; white-space: pre-wrap;">${item.desc}</p>
+                    <a href="${postLink}" style="color: #fca311; text-decoration: none; font-weight: bold; margin-top: 10px; display: inline-block;">記事を読む →</a>
+                </div>
+            `;
+            container.appendChild(article);
+        });
+
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'cbs_maunakea_posts' || e.key === VERSION_KEY) {
+                location.reload();
+            }
+        });
+    });
+    </script>
+</body>
+</html>
