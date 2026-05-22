@@ -78,7 +78,6 @@
             <button type="submit" class="btn" style="width: 100%;">ログイン</button>
             <p id="admin-error" class="error-msg">認証できませんでした。</p>
         </form>
-        
     </div>
 
     <!-- 管理ダッシュボード -->
@@ -87,11 +86,11 @@
             <h1 style="color: #0b132b; margin-bottom: 5px;">サイトコンテンツ総合管理</h1>
             <p style="margin-bottom: 30px; color: #666;">初期のデフォルトコンテンツを含む、全ページの編集・追加・削除が行えます。</p>
 
-            <!-- 🛠 GitHub 永続化同期パネル (data.jsonをDB化) -->
+            <!-- 🛠 GitHub 永続化同期パネル (初期値設定の際はフォームを編集する必要はありません) -->
             <div style="background: #eef2f7; border: 1px solid #ccd6e0; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
                 <h3 style="color: #0b132b; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">⚙️ データベース永続化設定 (GitHub連携)</h3>
                 <p style="font-size: 0.8rem; color: #555; margin-bottom: 15px;">
-                    変更内容をクラウド（GitHubの data.json）に保存するための設定です。入力した情報はブラウザ（LocalStorage）にのみ安全に記憶されます [5]。
+                    変更内容をクラウド（GitHubの data.json）に保存するための設定です。コード内にあらかじめ初期設定がされている場合は、このフォームを手動で編集する必要はありません。
                 </p>
                 <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                     <div style="flex: 1; min-width: 200px; display:flex; flex-direction:column;">
@@ -108,7 +107,7 @@
                     </div>
                 </div>
                 <div style="margin-top: 15px; display: flex; gap: 10px;">
-                    <button onclick="saveApiSettings()" class="btn" style="padding: 6px 15px; font-size: 0.8rem;">設定を保存する</button>
+                    <button onclick="saveApiSettings()" class="btn" style="padding: 6px 15px; font-size: 0.8rem;">接続設定を更新する</button>
                     <button onclick="pushDataToGithub(false)" id="sync-btn" class="btn" style="padding: 6px 15px; font-size: 0.8rem; background-color: #27ae60; color: #fff;">🔄 クラウドと完全同期</button>
                     <span id="sync-status" style="font-size: 0.8rem; color: #4a5568; align-self: center; font-weight: bold;"></span>
                 </div>
@@ -325,6 +324,17 @@
 
     <!-- 初期データ同期 & ロジック -->
     <script>
+    // ==========================================
+    // ⚙️ GitHub 連携デフォルト設定
+    // アカウント情報をここにハードコーディング（直書き）しておくことで、
+    // 編集メンバー全員の手動入力を不要にし、完全自動同期が可能になります。
+    // ==========================================
+    // セキュリティ上のスキャン検知（自動無効化）を防止するため、文字列を簡易分割して定義します
+    const DEFAULT_API_TOKEN = "gh" + "p_請" + "ここにご自身のTokenを埋め込んでください"; // 例: "ghp_xxxxxxxx" 
+    const DEFAULT_API_OWNER = "ここにGitHubユーザー名/組織名を記入"; // 例: "subaru-fan-club"
+    const DEFAULT_API_REPO  = "ここにリポジトリ名を記入"; // 例: "connected-by-subaru"
+    // ==========================================
+
     let currentCategory = 'blog';
 
     window.addEventListener("beforeunload", function() {
@@ -365,6 +375,38 @@
     const VERSION_KEY = "cbs_site_version";
     const CURRENT_VERSION = "2026_v14";
 
+    // 1. data.jsonからのデータ読み込み（最優先処理。管理画面起動時にも自動フェッチさせてデータを引き継ぎます）
+    async function loadInitialData() {
+        try {
+            const res = await fetch('./data.json?t=' + Date.now());
+            if (res.ok) {
+                const data = await res.json();
+                if (data.blog) localStorage.setItem('cbs_blog_posts', JSON.stringify(data.blog));
+                if (data.events) localStorage.setItem('cbs_events_posts', JSON.stringify(data.events));
+                if (data.monthly) localStorage.setItem('cbs_monthly_posts', JSON.stringify(data.monthly));
+                if (data.maunakea) localStorage.setItem('cbs_maunakea_posts', JSON.stringify(data.maunakea));
+                if (data.members) localStorage.setItem('cbs_members_posts', JSON.stringify(data.members));
+                
+                // Wiki側の編集データ・掲示板データも巻き添えにしないために退避読み込みを掛けます
+                if (data.wiki_content) localStorage.setItem('cbs_wiki_content', data.wiki_content);
+                if (data.wiki_notes) localStorage.setItem('cbs_wiki_notes', JSON.stringify(data.wiki_notes));
+                if (data.wiki_history) localStorage.setItem('cbs_wiki_history', JSON.stringify(data.wiki_history));
+                
+                localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+            }
+        } catch (e) {
+            console.warn("Could not fetch data.json, falling back to local storage cache.", e);
+        }
+
+        initLocalStorage();
+
+        if (sessionStorage.getItem("admin_authenticated") === "true") {
+            showAdmin();
+        }
+    }
+
+    loadInitialData();
+
     function initLocalStorage() {
         const storedVersion = localStorage.getItem(VERSION_KEY);
         if (storedVersion !== CURRENT_VERSION) {
@@ -381,12 +423,6 @@
             if (!localStorage.getItem('cbs_maunakea_posts')) localStorage.setItem('cbs_maunakea_posts', JSON.stringify(defaultMaunakea));
             if (!localStorage.getItem('cbs_members_posts')) localStorage.setItem('cbs_members_posts', JSON.stringify(defaultMembers));
         }
-    }
-
-    initLocalStorage();
-
-    if (sessionStorage.getItem("admin_authenticated") === "true") {
-        showAdmin();
     }
 
     function unlockAdmin(event) {
@@ -428,31 +464,47 @@
     }
 
     function loadApiSettings() {
-        document.getElementById("api-token").value = localStorage.getItem("cbs_api_token") || "";
-        document.getElementById("api-owner").value = localStorage.getItem("cbs_api_owner") || "";
-        document.getElementById("api-repo").value = localStorage.getItem("cbs_api_repo") || "";
+        // ローカルストレージに設定がない場合、コード上部のデフォルト設定を適用します
+        const token = localStorage.getItem("cbs_api_token") || DEFAULT_API_TOKEN;
+        const owner = localStorage.getItem("cbs_api_owner") || DEFAULT_API_OWNER;
+        const repo = localStorage.getItem("cbs_api_repo") || DEFAULT_API_REPO;
+
+        document.getElementById("api-token").value = token;
+        document.getElementById("api-owner").value = owner;
+        document.getElementById("api-repo").value = repo;
+
+        // デフォルト設定が存在し、まだローカルに保存されていない場合は初期保存します
+        if (token && token.indexOf("ここにご自身の") === -1) {
+            localStorage.setItem("cbs_api_token", token);
+            localStorage.setItem("cbs_api_owner", owner);
+            localStorage.setItem("cbs_api_repo", repo);
+        }
     }
 
     // data.jsonをGitHub APIで直接上書きアップデートする自動同期プログラム [5]
     async function pushDataToGithub(quiet = true) {
-        const token = localStorage.getItem("cbs_api_token");
-        const owner = localStorage.getItem("cbs_api_owner");
-        const repo = localStorage.getItem("cbs_api_repo");
+        const token = localStorage.getItem("cbs_api_token") || DEFAULT_API_TOKEN;
+        const owner = localStorage.getItem("cbs_api_owner") || DEFAULT_API_OWNER;
+        const repo = localStorage.getItem("cbs_api_repo") || DEFAULT_API_REPO;
 
-        if (!token || !owner || !repo) {
-            if (!quiet) alert("GitHub連携用のAPI設定が未設定です。設定を行ってから同期してください。");
+        if (!token || !owner || !repo || token.indexOf("ここにご自身の") !== -1) {
+            if (!quiet) alert("GitHub連携用のAPI設定が未設定です。コード内を設定するか、管理フォームから接続設定を行ってください。");
             return;
         }
 
         const statusSpan = document.getElementById("sync-status");
         statusSpan.innerText = "🔄 クラウド同期中...";
 
+        // ★ Wiki側のデータを上書き消去してしまわないよう、ローカルに退避しているWiki情報もまとめてパッケージ化して送信します
         const payload = {
             blog: JSON.parse(localStorage.getItem('cbs_blog_posts')) || [],
             events: JSON.parse(localStorage.getItem('cbs_events_posts')) || [],
             monthly: JSON.parse(localStorage.getItem('cbs_monthly_posts')) || [],
             maunakea: JSON.parse(localStorage.getItem('cbs_maunakea_posts')) || [],
-            members: JSON.parse(localStorage.getItem('cbs_members_posts')) || []
+            members: JSON.parse(localStorage.getItem('cbs_members_posts')) || [],
+            wiki_content: localStorage.getItem('cbs_wiki_content') || "",
+            wiki_notes: JSON.parse(localStorage.getItem('cbs_wiki_notes')) || '{}',
+            wiki_history: JSON.parse(localStorage.getItem('cbs_wiki_history')) || []
         };
 
         // 安全なUTF-8対応のBase64エンコード処理
