@@ -1,0 +1,540 @@
+/* 全体のスタイルとリセット */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f9f9f9;
+}
+
+/* ヘッダー */
+header {
+    background-color: #0b132b; /* 宇宙をイメージしたダークブルー */
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 5%;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+header .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+header .logo a {
+    color: #fca311;
+    text-decoration: none; /* 下線を消す */
+}
+
+header nav ul {
+    list-style: none;
+    display: flex;
+}
+
+header nav ul li {
+    margin-left: 20px;
+}
+
+header nav ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s;
+}
+
+header nav ul li a:hover {
+    color: #fca311; /* 星をイメージしたゴールド */
+}
+
+/* ヒーローセクション（トップ） */
+.hero {
+    /* 実際の運用時はここに星空やすばる望遠鏡の背景画像を指定します */
+    background: linear-gradient(to bottom, rgba(11, 19, 43, 0.8), rgba(11, 19, 43, 0.8)), url('../image/subaru-1.jpg') center/cover;
+    height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: #fff;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+}
+
+.btn {
+    display: inline-block;
+    background-color: #fca311;
+    color: #0b132b;
+    padding: 10px 25px;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 25px;
+    transition: background-color 0.3s;
+    border: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #e59400;
+}
+
+/* セクション共通 */
+.section {
+    padding: 60px 10%;
+    text-align: center;
+}
+
+.section h2 {
+    font-size: 2rem;
+    margin-bottom: 30px;
+    color: #0b132b;
+}
+
+.bg-dark {
+    background-color: #1c2541;
+    color: #fff;
+}
+
+.bg-dark h2 {
+    color: #fff;
+}
+
+/* カード型レイアウト（すばる望遠鏡とは） */
+.card-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.card {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 30px;
+    border-radius: 10px;
+    width: 30%;
+    min-width: 250px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.card h3 {
+    margin-bottom: 15px;
+    color: #fca311;
+}
+
+/* 活動内容リスト */
+.activity-list {
+    text-align: left;
+    max-width: 600px;
+    margin: 0 auto;
+    list-style: none;
+}
+
+.activity-list li {
+    background-color: #fff;
+    margin-bottom: 15px;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* フォーム */
+.contact-form {
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.contact-form input, .contact-form textarea {
+    padding: 15px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+/* フッター */
+footer {
+    background-color: #0b132b;
+    color: #888;
+    text-align: center;
+    padding: 20px 0;
+    font-size: 0.8rem;
+}
+
+
+/* メニューの項目が多くなった時の対応 */
+header nav .nav-menu {
+    display: flex;
+    flex-wrap: wrap; /* 画面が狭い時に折り返す */
+    gap: 15px; /* 項目間の隙間 */
+}
+
+header nav .nav-menu li {
+    margin-left: 0; /* 元のマージンをリセット */
+}
+
+/* 下層ページ用ヘッダー（別ページを開いた時の上部タイトル） */
+.page-header {
+    padding: 80px 10% 40px;
+    text-align: center;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    color: #fca311;
+    margin-bottom: 10px;
+}
+
+/* --- ブログ個別記事ページ用スタイル追加 --- */
+
+.bg-light {
+    background-color: #f4f6f9;
+}
+
+.blog-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 5%;
+}
+
+.blog-article {
+    background-color: #fff;
+    padding: 40px 8%;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.article-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #eaeaea;
+}
+
+.article-date {
+    color: #888;
+    font-size: 0.95rem;
+    font-weight: bold;
+}
+
+.article-header h1 {
+    color: #fca311;
+    font-size: 2rem;
+    line-height: 1.4;
+    margin-top: 10px;
+}
+
+.article-body p {
+    margin-bottom: 1.8rem;
+    line-height: 1.9;
+    font-size: 1.05rem;
+}
+
+.article-body h2 {
+    color: #0b132b;
+    font-size: 1.6rem;
+    margin: 60px 0 25px;
+    padding-left: 15px;
+    border-left: 5px solid #fca311; /* 左側にゴールドの線 */
+}
+
+.article-body h3 {
+    color: #1c2541;
+    font-size: 1.3rem;
+    margin: 40px 0 15px;
+    border-bottom: 1px dashed #ccc;
+    padding-bottom: 8px;
+}
+
+.article-body ul {
+    margin-bottom: 1.8rem;
+    padding-left: 1.5rem;
+    line-height: 1.8;
+}
+
+.article-body li {
+    margin-bottom: 8px;
+}
+
+/* 画像プレースホルダー（ダミー画像） */
+.dummy-img {
+    background-color: #e2e8f0;
+    height: 250px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #64748b;
+    font-weight: bold;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.article-body figure {
+    margin: 40px 0;
+}
+
+.article-body figcaption {
+    font-size: 0.85rem;
+    color: #666;
+    text-align: center;
+}
+
+/* 費用の表（テーブル） */
+.table-wrapper {
+    margin-bottom: 2rem;
+    overflow-x: auto;
+}
+
+.cost-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 400px;
+}
+
+.cost-table th, .cost-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+.cost-table th {
+    background-color: #0b132b;
+    color: #fff;
+}
+
+/* --- 追加の共通スタイル（ナビゲーション調整） --- */
+header nav .nav-menu {
+    gap: 12px;
+}
+
+header nav ul li a {
+    font-size: 0.85rem;
+}
+
+/* フッターのSNSリンク */
+.footer-sns {
+    margin-bottom: 15px;
+}
+.footer-sns a {
+    color: #fff;
+    margin: 0 10px;
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: color 0.3s;
+}
+.footer-sns a:hover {
+    color: #fca311;
+}
+
+/* --- メンバー紹介ページ用スタイル --- */
+.member-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 30px;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+.member-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 30px 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    text-align: center;
+}
+.member-photo {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background-color: #0b132b;
+    color: #fca311;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.8rem;
+    margin: 0 auto 15px;
+}
+.member-role {
+    font-size: 0.8rem;
+    color: #fca311;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+.member-name {
+    font-size: 1.2rem;
+    color: #0b132b;
+    margin-bottom: 10px;
+}
+.member-comment {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.5;
+}
+
+/* --- メディア・YouTube用スタイル --- */
+.video-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+@media(min-width: 768px) {
+    .video-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .video-wide {
+        grid-column: span 2;
+    }
+}
+.video-card {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    text-align: left;
+}
+.video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+}
+.video-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+.video-info {
+    padding: 20px;
+}
+.video-info h3 {
+    margin-bottom: 8px;
+    color: #0b132b;
+}
+
+/* --- パスワードロック画面スタイル --- */
+.lock-container {
+    max-width: 400px;
+    margin: 80px auto;
+    background: #fff;
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    text-align: center;
+}
+.lock-icon {
+    font-size: 3rem;
+    color: #fca311;
+    margin-bottom: 15px;
+}
+.lock-form input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    margin-bottom: 15px;
+    text-align: center;
+}
+.error-msg {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    margin-top: 10px;
+    display: none;
+}
+
+/* --- Wiki表示用スタイル --- */
+.wiki-content {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: left;
+}
+.wiki-section {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+.wiki-section h3 {
+    border-left: 4px solid #fca311;
+    padding-left: 10px;
+    margin-bottom: 15px;
+    color: #0b132b;
+}
+
+/* --- 管理画面（Blog）用スタイル --- */
+.admin-dashboard {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: left;
+}
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+.form-group label {
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #0b132b;
+}
+.form-group input, .form-group textarea {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+.post-manager {
+    background: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    margin-top: 40px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+.post-manager table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+.post-manager th, .post-manager td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+.btn-danger {
+    background-color: #e74c3c;
+    color: #fff;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+.btn-danger:hover {
+    background-color: #c0392b;
+}
