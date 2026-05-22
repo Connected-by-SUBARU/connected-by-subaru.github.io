@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>イベント告知 | Connected by SUBARU(CbS)</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo"><a href="index.html">Connected by SUBARU(CbS)</a></div>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="monthly.html">今月のすばる</a></li>
+                <li><a href="events.html">イベント告知</a></li>
+                <li><a href="maunakea.html">マウナケア便り</a></li>
+                <li><a href="members.html">メンバー紹介</a></li>
+                <li><a href="media.html">メディア・ライブ</a></li>
+                <li><a href="wiki.html" style="color: #fca311; font-weight: bold;">Wiki(限定)</a></li>
+                <li><a href="index.html#join">お問い合わせ</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="page-header bg-dark">
+        <h1>イベント告知</h1>
+        <p>すばる望遠鏡や宇宙に関するイベント情報</p>
+    </section>
+
+    <section class="section">
+        <div id="dynamic-events-container" style="max-width: 800px; margin: 0 auto; text-align: left;">
+            <!-- JavaScriptにて動的挿入 -->
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-sns">
+            <a href="https://x.com" target="_blank">X (旧Twitter)</a>
+            <a href="https://instagram.com" target="_blank">Instagram</a>
+            <a href="media.html">YouTube / ライブ中継</a>
+            <a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;">(管理者ログイン)</a>
+        </div>
+        <p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.</p>
+        <p><small>※当サークルは国立天文台を応援する有志のボランティアサークルです。</small></p>
+    </footer>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const defaultEvents = [
+            { id: "default-event-1", title: "🌟 夏のオンライン観望会", date: "2026年7月11日（土）20:00 〜 21:30", location: "オンライン（Zoom配信）", status: "参加受付中", desc: "ハワイ・マウナケアの星空カメラと中継をつなぎ、みんなで星空を眺めるイベントです。サークルメンバーによる星座解説もあります！専門知識は不要ですので、お気軽にご参加ください。", content: "#" },
+            { id: "default-event-2", title: "🔭 CbS 新入メンバー歓迎 勉強会", date: "2026年5月9日（土）14:00 〜 16:00", location: "都内会議室 ＆ オンライン", status: "終了しました", desc: "すばる望遠鏡の基本的な仕組みや、広報支援サークルとしての今後の活動計画を共有するキックオフミーティングです。", content: "#" }
+        ];
+
+        // キャッシュクリア・同期用キー
+        const VERSION_KEY = "cbs_site_version";
+        const CURRENT_VERSION = "2026_v10";
+
+        const storedVersion = localStorage.getItem(VERSION_KEY);
+        if (storedVersion !== CURRENT_VERSION) {
+            localStorage.setItem('cbs_events_posts', JSON.stringify(defaultEvents));
+            localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+            location.reload();
+            return;
+        }
+
+        if (!localStorage.getItem('cbs_events_posts')) {
+            localStorage.setItem('cbs_events_posts', JSON.stringify(defaultEvents));
+        }
+
+        let events = [];
+        try {
+            events = JSON.parse(localStorage.getItem('cbs_events_posts'));
+        } catch (e) {
+            events = defaultEvents;
+        }
+
+        const container = document.getElementById("dynamic-events-container");
+        container.innerHTML = "";
+
+        events.forEach(evt => {
+            const borderStyle = evt.status === "参加受付中" ? "6px solid #fca311" : "6px solid #ccc";
+            const badgeBg = evt.status === "参加受付中" ? "#e74c3c" : "#999555";
+            
+            // 登録されたURL（content）を設定。空の場合はデフォルト「#」に設定します
+            const postLink = evt.content || "#";
+
+            const item = document.createElement("div");
+            item.style.background = "#fff";
+            item.style.padding = "25px";
+            item.style.borderRadius = "8px";
+            item.style.marginBottom = "20px";
+            item.style.borderLeft = borderStyle;
+            item.style.boxShadow = "0 4px 6px rgba(0,0,0,0.05)";
+
+            item.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="color: #0b132b; margin: 0; font-size: 1.4rem;">${evt.title}</h3>
+                    <span style="background: ${badgeBg}; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">${evt.status}</span>
+                </div>
+                <p><strong>日時：</strong> ${evt.date}<br>
+                   <strong>場所：</strong> ${evt.location}</p>
+                <p style="margin-top: 10px; white-space: pre-wrap;">${evt.desc}</p>
+                ${evt.status === "参加受付中" ? `<a href="${postLink}" class="btn" style="margin-top: 15px; font-size: 0.9rem;">詳細・お申し込み</a>` : ''}
+            `;
+            container.appendChild(item);
+        });
+
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'cbs_events_posts' || e.key === VERSION_KEY) {
+                location.reload();
+            }
+        });
+    });
+    </script>
+</body>
+</html>
