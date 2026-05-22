@@ -1,0 +1,146 @@
+{
+  "blog": [
+    {
+      "id": "default-blog-1",
+      "date": "2026年5月18日",
+      "title": "すばる望遠鏡体験企画に参加してわかった、“研究の現場”のリアル",
+      "summary": "「すばる望遠鏡」と聞くと、宇宙の美しい写真や最先端の天文学研究を思い浮かべる人が多いかもしれません。ですが、実際に現地へ...",
+      "content": "blog-article.html"
+    },
+    {
+      "id": "default-blog-2",
+      "date": "2026年5月20日",
+      "title": "サークル「CbS」キックオフ",
+      "summary": "いよいよ私たち「Connected by SUBARU(CbS)」の活動がスタートしました！...",
+      "content": "#"
+    }
+  ],
+  "events": [
+    {
+      "id": "default-event-1",
+      "title": "🌟 夏のオンライン観望会",
+      "date": "2026年7月11日（土）20:00 〜 21:30",
+      "location": "オンライン（Zoom配信）",
+      "status": "参加受付中",
+      "desc": "ハワイ・マウナケアの星空カメラと中継をつなぎ、みんなで星空を眺めるイベントです。サークルメンバーによる星座解説もあります！専門知識は不要ですので、お気軽にご参加ください。",
+      "content": "#"
+    },
+    {
+      "id": "default-event-2",
+      "title": "🔭 CbS 新入メンバー歓迎 勉強会",
+      "date": "2026年5月9日（土）14:00 〜 16:00",
+      "location": "都内会議室 ＆ オンライン",
+      "status": "終了しました",
+      "desc": "すばる望遠鏡の基本的な仕組みや、広報支援サークルとしての今後の活動計画を共有するキックオフミーティングです。",
+      "content": "#"
+    }
+  ],
+  "monthly": [
+    {
+      "id": "default-monthly-1",
+      "title": "宇宙の果ての巨大銀河を発見！",
+      "date": "2026年5月 更新",
+      "imgText: ": "（銀河の画像）",
+      "desc": "地球から130億光年以上も離れた場所に、想像以上に成長した銀河が見つかりました。タイムマシンに乗って昔の宇宙を覗いているような感覚です！",
+      "content": "#"
+    },
+    {
+      "id": "default-monthly-2",
+      "title": "星の赤ちゃんが生まれるゆりかご",
+      "date": "2026年4月 更新",
+      "imgText: ": "（星が生まれる場所の画像）",
+      "desc": "チリとガスが渦巻く星雲の中で、まさに今、新しい星が誕生しようとしている様子が鮮明に撮影されました。超高解像度ならではの1枚です。",
+      "content": "#"
+    },
+    {
+      "id": "default-monthly-3",
+      "title": "第二の地球を探して",
+      "date": "2026年3月 更新",
+      "imgText: ": "（惑星の画像）",
+      "desc": "すばる望遠鏡の特殊な装置を使って、太陽系外の惑星を直接撮影することに成功。そこには生命が存在するのでしょうか？",
+      "content": "#"
+    }
+  ],
+  "maunakea": [
+    {
+      "id": "default-mk-3",
+      "vol": "Vol. 3",
+      "title": "標高4,200mの世界！空気が薄いとどうなる？",
+      "imgText": "（山の風景）",
+      "desc": "すばる望遠鏡があるマウナケア山頂は、富士山よりも高い場所にあります。空気が地上の約6割しかない環境で、研究者たちはどのように観測をしているのでしょうか？高山病対策の裏側に迫ります。",
+      "content": "#"
+    },
+    {
+      "id": "default-mk-2",
+      "vol": "Vol. 2",
+      "title": "ハワイの伝統文化と「星」の深いつながり",
+      "imgText": "（ハワイの星空）",
+      "desc": "古代ポリネシアの人々は、羅針盤を持たずに星の光だけを頼りにハワイの島々へ辿り着いたと言われています。「ホクレア号」のエピソードなど、ハワイ文化と星のロマンチックな関係をご紹介。",
+      "content": "#"
+    },
+    {
+      "id": "default-mk-1",
+      "vol": "Vol. 1",
+      "title": "直径8.2メートルの巨大な鏡、どうやって洗うの？",
+      "imgText": "（望遠鏡の鏡）",
+      "desc": "望遠鏡の命とも言える「主鏡」。少しのチリや汚れも許されないこの巨大な鏡を、実は現地スタッフが定期的に大掛かりな作業で洗浄しています。その驚きの洗浄方法とは！？",
+      "content": "#"
+    }
+  ],
+  "members": [
+    {
+      "id": "default-member-1",
+      "name": "四本瑞樹 (青山学院大)",
+      "role": "Representative Candidate / Developer",
+      "photo": "四",
+      "comment": "",
+      "year": "2026",
+      "category": "代表・開発"
+    },
+    {
+      "id": "default-member-2",
+      "name": "横山史織 (日大)",
+      "role": "Hawaii Culturist / Writer",
+      "photo: ": "横",
+      "comment": "",
+      "year": "2026",
+      "category": "編集・執筆"
+    },
+    {
+      "id": "default-member-3",
+      "name": "髙橋恵吾 (東北大)",
+      "role": "Visual Designer / Editor",
+      "photo: ": "髙",
+      "comment": "",
+      "year": "2026",
+      "category": "デザイン"
+    },
+    {
+      "id": "default-member-4",
+      "name": "落合優名 (琉球大)",
+      "role": "Event Planner",
+      "photo: ": "落",
+      "comment": "",
+      "year": "2026",
+      "category": "企画"
+    },
+    {
+      "id": "default-member-5",
+      "name": "川田匠人 (鹿児島大)",
+      "role": "Web Engineer / Designer",
+      "photo: ": "川",
+      "comment": "",
+      "year": "2026",
+      "category": "開発・デザイン"
+    },
+    {
+      "id": "default-member-6",
+      "name": "高森碧 (京都産業大)",
+      "role": "Product Planner / PR",
+      "photo: ": "高",
+      "comment": "",
+      "year": "2026",
+      "category": "企画・広報"
+    }
+  ]
+}
