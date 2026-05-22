@@ -49,16 +49,15 @@
     </footer>
 
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", async function() {
         const defaultMonthly = [
             { id: "default-monthly-1", title: "宇宙の果ての巨大銀河を発見！", date: "2026年5月 更新", imgText: "（銀河の画像）", desc: "地球から130億光年以上も離れた場所に、想像以上に成長した銀河が見つかりました。タイムマシンに乗って昔の宇宙を覗いているような感覚です！", content: "#" },
             { id: "default-monthly-2", title: "星の赤ちゃんが生まれるゆりかご", date: "2026年4月 更新", imgText: "（星が生まれる場所の画像）", desc: "チリとガスが渦巻く星雲の中で、まさに今、新しい星が誕生しようとしている様子が鮮明に撮影されました。超高解像度ならではの1枚です。", content: "#" },
             { id: "default-monthly-3", title: "第二の地球を探して", date: "2026年3月 更新", imgText: "（惑星の画像）", desc: "すばる望遠鏡の特殊な装置を使って、太陽系外の惑星を直接撮影することに成功。そこには生命が存在するのでしょうか？", content: "#" }
         ];
 
-        // キャッシュクリア・同期用キー
         const VERSION_KEY = "cbs_site_version";
-        const CURRENT_VERSION = "2026_v10";
+        const CURRENT_VERSION = "2026_v14";
 
         const storedVersion = localStorage.getItem(VERSION_KEY);
         if (storedVersion !== CURRENT_VERSION) {
@@ -73,10 +72,23 @@
         }
 
         let monthlyList = [];
+        
+        // 🌐 サーバー（GitHub）から共有 data.json をロードする処理
         try {
-            monthlyList = JSON.parse(localStorage.getItem('cbs_monthly_posts'));
+            const res = await fetch('data.json?t=' + Date.now());
+            if (res.ok) {
+                const sharedData = await res.json();
+                monthlyList = sharedData.monthly || [];
+                localStorage.setItem('cbs_monthly_posts', JSON.stringify(monthlyList));
+            } else {
+                throw new Error();
+            }
         } catch (e) {
-            monthlyList = defaultMonthly;
+            try {
+                monthlyList = JSON.parse(localStorage.getItem('cbs_monthly_posts')) || defaultMonthly;
+            } catch (err) {
+                monthlyList = defaultMonthly;
+            }
         }
 
         const container = document.getElementById("monthly-container");
@@ -85,8 +97,6 @@
         monthlyList.forEach((item, idx) => {
             const colors = ["#0b132b", "#1c2541", "#2b3a67"];
             const bg = colors[idx % colors.length];
-
-            // 登録されたURL（content）を設定。空の場合はデフォルト「#」に設定します
             const postLink = item.content || "#";
 
             const card = document.createElement("div");
