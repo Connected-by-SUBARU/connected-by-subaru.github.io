@@ -47,17 +47,16 @@
     </footer>
 
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", async function() {
         const defaultMembers = [
-            { id: "default-member-1", name: "四本瑞樹 (青山学院大)", role: "member", photo: "四", comment: "", year: "2026", category: "メンバー" },
-            { id: "default-member-2", name: "横山史織 (日大)", role: "member", photo: "横", comment: "", year: "2026", category: "メンバー" },
-            { id: "default-member-3", name: "髙橋恵吾 (東北大)", role: "member", photo: "髙", comment: "", year: "2026", category: "メンバー" },
-            { id: "default-member-4", name: "落合優名 (琉球大)", role: "member", photo: "落", comment: "", year: "2026", category: "メンバー" },
-            { id: "default-member-5", name: "川田匠人 (鹿児島大)", role: "member", photo: "川", comment: "", year: "2026", category: "メンバー" },
-            { id: "default-member-6", name: "高森碧 (京都産業大)", role: "member", photo: "高", comment: "", year: "2026", category: "メンバー" }
+            { id: "default-member-1", name: "四本瑞樹 (青山学院大)", role: "Representative Candidate / Developer", photo: "四", comment: "", year: "2026", category: "代表・開発" },
+            { id: "default-member-2", name: "横山史織 (日大)", role: "Hawaii Culturist / Writer", photo: "横", comment: "", year: "2026", category: "編集・執筆" },
+            { id: "default-member-3", name: "髙橋恵吾 (東北大)", role: "Visual Designer / Editor", photo: "髙", comment: "", year: "2026", category: "デザイン" },
+            { id: "default-member-4", name: "落合優名 (琉球大)", role: "Event Planner", photo: "落", comment: "", year: "2026", category: "企画" },
+            { id: "default-member-5", name: "川田匠人 (鹿児島大)", role: "Web Engineer / Designer", photo: "川", comment: "", year: "2026", category: "開発・デザイン" },
+            { id: "default-member-6", name: "高森碧 (京都産業大)", role: "Product Planner / PR", photo: "高", comment: "", year: "2026", category: "企画・広報" }
         ];
 
-        // 同期用キー
         const VERSION_KEY = "cbs_site_version";
         const CURRENT_VERSION = "2026_v14";
 
@@ -74,10 +73,23 @@
         }
 
         let membersList = [];
+        
+        // 🌐 サーバー（GitHub）から共有 data.json をロードする処理
         try {
-            membersList = JSON.parse(localStorage.getItem('cbs_members_posts'));
+            const res = await fetch('data.json?t=' + Date.now());
+            if (res.ok) {
+                const sharedData = await res.json();
+                membersList = sharedData.members || [];
+                localStorage.setItem('cbs_members_posts', JSON.stringify(membersList));
+            } else {
+                throw new Error();
+            }
         } catch (e) {
-            membersList = defaultMembers;
+            try {
+                membersList = JSON.parse(localStorage.getItem('cbs_members_posts')) || defaultMembers;
+            } catch (err) {
+                membersList = defaultMembers;
+            }
         }
 
         const container = document.getElementById("members-grid");
@@ -91,7 +103,6 @@
                 ? `<p class="member-comment" style="white-space: pre-wrap; margin-top: 15px; border-top: 1px dashed #eee; padding-top: 10px;">${mem.comment}</p>` 
                 : '';
 
-            // 加入年度およびカテゴリ情報がある場合に表示するHTML文字列を生成
             const yearCategoryHTML = (mem.year || mem.category)
                 ? `<div style="font-size: 0.75rem; color: #7f8c8d; margin-bottom: 8px; font-weight: bold;">
                     ${mem.year ? mem.year + '年度加入' : ''} ${mem.year && mem.category ? '|' : ''} ${mem.category || ''}
@@ -108,7 +119,6 @@
             container.appendChild(card);
         });
 
-        // 他のタブでのメンバー情報やシステムバージョン変更を検知して自動リロード
         window.addEventListener('storage', function(e) {
             if (e.key === 'cbs_members_posts' || e.key === VERSION_KEY) {
                 location.reload();
