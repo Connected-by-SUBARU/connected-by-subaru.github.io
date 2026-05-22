@@ -18,7 +18,8 @@
                 <li><a href="maunakea.html">マウナケア便り</a></li>
                 <li><a href="members.html">メンバー紹介</a></li>
                 <li><a href="media.html">メディア・ライブ</a></li>
-                <li><a href="wiki.html" style="color: #fca311; font-weight: bold;">Wiki(限定)</a></li>
+                <li><a href="wiki.html" style="color: #fca311; font-weight: bold;">Wiki(限定)</a>
+        </li>
                 <li><a href="index.html#join">お問い合わせ</a></li>
             </ul>
         </nav>
@@ -49,7 +50,10 @@
                 <h3>ハワイ・マウナケア山頂</h3>
                 <p>標高4,200m。空気が薄く晴天率が高い、地球上で最も天体観測に適した場所のひとつに建てられています。</p>
             </div>
-            
+            <div class="card">
+                <h3>第二の地球を探す</h3>
+                <p>太陽系外惑星の直接撮影や、宇宙の膨張を解き明かすダークマター・ダークエネルギーの研究で世界をリードしています。</p>
+            </div>
         </div>
     </section>
 
@@ -68,30 +72,16 @@
     <section id="join" class="section bg-dark">
         <h2>お問い合わせ</h2>
         <p>難しい数式は使わず、ビジュアルとやさしい言葉で魅力を伝える活動です！</p>
-        
-        <!-- 送信先メールアドレスをaction属性に設定し、methodをPOSTにします -->
-        <form class="contact-form" action="https://formsubmit.co/connected.by.subaru@gmail.com" method="POST" style="margin-top: 20px;">
-            
-            <!-- スパム防止用の隠しフィールド（ボットによる自動送信を防ぐハニーポット機能） -->
-            <input type="text" name="_honey" style="display:none">
-            
-            <!-- 任意：画像によるロボット認証（reCAPTCHA）をオフにしたい場合は以下を有効にします（スパム対策のため初期状態での有効化を推奨します） -->
-            <!-- <input type="hidden" name="_captcha" value="false"> -->
-            
-            <!-- 任意：送信完了後に別の自作サンクスページ等に自動遷移させたい場合は、そのURLを指定します -->
-            <!-- <input type="hidden" name="_next" value="https://yourdomain.html"> -->
-
-            <!-- 各入力欄には「name属性」が必須です -->
-            <input type="text" name="name" placeholder="お名前" required>
-            <input type="email" name="email" placeholder="メールアドレス" required>
-            <textarea name="message" placeholder="メッセージや質問などをご記入ください" rows="5" required></textarea>
-            
+        <form class="contact-form" style="margin-top: 20px;">
+            <input type="text" placeholder="お名前" required>
+            <input type="email" placeholder="メールアドレス" required>
+            <textarea placeholder="メッセージや質問などをご記入ください" rows="5" required></textarea>
             <button type="submit" class="btn">送信する</button>
         </form>
     </section>
 
     <footer>
-        <div class="footer-sns">
+        <div class="footer-sns"></div>
             <a href="https://x.com" target="_blank">X (旧Twitter)</a>
             <a href="https://instagram.com" target="_blank">Instagram</a>
             <a href="media.html">YouTube / ライブ中継</a>
@@ -100,28 +90,4 @@
         <p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.</p>
         <p><small>※当サークルは国立天文台を応援する有志のボランティアサークルです。</small></p>
     </footer>
-
-    <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const VERSION_KEY = "cbs_site_version";
-        const CURRENT_VERSION = "2026_v9";
-
-        // 初めてトップページ（または最新バージョンでない古いキャッシュのブラウザ）
-        // でアクセスされた場合に、全システムのバージョン同期チェックを掛けます
-        const storedVersion = localStorage.getItem(VERSION_KEY);
-        if (storedVersion !== CURRENT_VERSION) {
-            localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
-            location.reload();
-            return;
-        }
-
-        // 他のタブ（管理画面など）でのデータ更新・システムバージョン更新を検知して自動リロード
-        window.addEventListener('storage', function(e) {
-            if (e.key === VERSION_KEY) {
-                location.reload();
-            }
-        });
-    });
-    </script>
 </body>
-</html>
