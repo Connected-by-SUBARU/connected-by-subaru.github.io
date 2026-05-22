@@ -47,16 +47,15 @@
     </footer>
 
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", async function() {
         const defaultMaunakea = [
             { id: "default-mk-3", vol: "Vol. 3", title: "標高4,200mの世界！空気が薄いとどうなる？", imgText: "（山の風景）", desc: "すばる望遠鏡があるマウナケア山頂は、富士山よりも高い場所にあります。空気が地上の約6割しかない環境で、研究者たちはどのように観測をしているのでしょうか？高山病対策の裏側に迫ります。", content: "#" },
             { id: "default-mk-2", vol: "Vol. 2", title: "ハワイの伝統文化と「星」の深いつながり", imgText: "（ハワイの星空）", desc: "古代ポリネシアの人々は、羅針盤を持たずに星の光だけを頼りにハワイの島々へ辿り着いたと言われています。「ホクレア号」のエピソードなど、ハワイ文化と星のロマンチックな関係をご紹介。", content: "#" },
             { id: "default-mk-1", vol: "Vol. 1", title: "直径8.2メートルの巨大な鏡、どうやって洗うの？", imgText: "（望遠鏡の鏡）", desc: "望遠鏡の命とも言える「主鏡」。少しのチリや汚れも許されないこの巨大な鏡を、実は現地スタッフが定期的に大掛かりな作業で洗浄しています。その驚きの洗浄方法とは！？", content: "#" }
         ];
 
-        // キャッシュクリア・同期用キー
         const VERSION_KEY = "cbs_site_version";
-        const CURRENT_VERSION = "2026_v10";
+        const CURRENT_VERSION = "2026_v14";
 
         const storedVersion = localStorage.getItem(VERSION_KEY);
         if (storedVersion !== CURRENT_VERSION) {
@@ -71,10 +70,23 @@
         }
 
         let mkList = [];
+        
+        // 🌐 サーバー（GitHub）から共有 data.json をロードする処理
         try {
-            mkList = JSON.parse(localStorage.getItem('cbs_maunakea_posts'));
+            const res = await fetch('data.json?t=' + Date.now());
+            if (res.ok) {
+                const sharedData = await res.json();
+                mkList = sharedData.maunakea || [];
+                localStorage.setItem('cbs_maunakea_posts', JSON.stringify(mkList));
+            } else {
+                throw new Error();
+            }
         } catch (e) {
-            mkList = defaultMaunakea;
+            try {
+                mkList = JSON.parse(localStorage.getItem('cbs_maunakea_posts')) || defaultMaunakea;
+            } catch (err) {
+                mkList = defaultMaunakea;
+            }
         }
 
         const container = document.getElementById("maunakea-container");
@@ -90,8 +102,6 @@
             article.style.display = "flex";
             article.style.gap = "20px";
             article.style.flexWrap = "wrap";
-
-            // 登録されたURL（content）を設定。空の場合はデフォルト「#」に設定します
             const postLink = item.content || "#";
 
             article.innerHTML = `
