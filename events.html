@@ -47,15 +47,14 @@
     </footer>
 
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", async function() {
         const defaultEvents = [
             { id: "default-event-1", title: "🌟 夏のオンライン観望会", date: "2026年7月11日（土）20:00 〜 21:30", location: "オンライン（Zoom配信）", status: "参加受付中", desc: "ハワイ・マウナケアの星空カメラと中継をつなぎ、みんなで星空を眺めるイベントです。サークルメンバーによる星座解説もあります！専門知識は不要ですので、お気軽にご参加ください。", content: "#" },
             { id: "default-event-2", title: "🔭 CbS 新入メンバー歓迎 勉強会", date: "2026年5月9日（土）14:00 〜 16:00", location: "都内会議室 ＆ オンライン", status: "終了しました", desc: "すばる望遠鏡の基本的な仕組みや、広報支援サークルとしての今後の活動計画を共有するキックオフミーティングです。", content: "#" }
         ];
 
-        // キャッシュクリア・同期用キー
         const VERSION_KEY = "cbs_site_version";
-        const CURRENT_VERSION = "2026_v10";
+        const CURRENT_VERSION = "2026_v14";
 
         const storedVersion = localStorage.getItem(VERSION_KEY);
         if (storedVersion !== CURRENT_VERSION) {
@@ -70,10 +69,23 @@
         }
 
         let events = [];
+        
+        // 🌐 サーバー（GitHub）から共有 data.json をロードする処理
         try {
-            events = JSON.parse(localStorage.getItem('cbs_events_posts'));
+            const res = await fetch('data.json?t=' + Date.now());
+            if (res.ok) {
+                const sharedData = await res.json();
+                events = sharedData.events || [];
+                localStorage.setItem('cbs_events_posts', JSON.stringify(events));
+            } else {
+                throw new Error();
+            }
         } catch (e) {
-            events = defaultEvents;
+            try {
+                events = JSON.parse(localStorage.getItem('cbs_events_posts')) || defaultEvents;
+            } catch (err) {
+                events = defaultEvents;
+            }
         }
 
         const container = document.getElementById("dynamic-events-container");
@@ -82,8 +94,6 @@
         events.forEach(evt => {
             const borderStyle = evt.status === "参加受付中" ? "6px solid #fca311" : "6px solid #ccc";
             const badgeBg = evt.status === "参加受付中" ? "#e74c3c" : "#999555";
-            
-            // 登録されたURL（content）を設定。空の場合はデフォルト「#」に設定します
             const postLink = evt.content || "#";
 
             const item = document.createElement("div");
