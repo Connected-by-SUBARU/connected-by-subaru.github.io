@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今月のすばる | Connected by SUBARU(CbS)</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo"><a href="index.html">Connected by SUBARU(CbS)</a></div>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="monthly.html">今月のすばる</a></li>
+                <li><a href="events.html">イベント告知</a></li>
+                <li><a href="maunakea.html">マウナケア便り</a></li>
+                <li><a href="members.html">メンバー紹介</a></li>
+                <li><a href="media.html">メディア・ライブ</a></li>
+                <li><a href="wiki.html" style="color: #fca311; font-weight: bold;">Wiki(限定)</a></li>
+                <li><a href="index.html#join">お問い合わせ</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="page-header bg-dark">
+        <h1>今月のすばる</h1>
+        <p>すばる望遠鏡が捉えた最新画像のやさしい解説</p>
+    </section>
+
+    <section class="section">
+        <p style="margin-bottom: 40px; text-align: center;">X（旧Twitter）に投稿されたすばる望遠鏡の観測成果を、数式を使わずに分かりやすく解説します。</p>
+        
+        <div id="monthly-container" class="card-container" style="max-width: 1000px; margin: 0 auto;">
+            <!-- JavaScriptにて動的挿入 -->
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-sns">
+            <a href="https://x.com" target="_blank">X (旧Twitter)</a>
+            <a href="https://instagram.com" target="_blank">Instagram</a>
+            <a href="media.html">YouTube / ライブ中継</a>
+            <a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;">(管理者ログイン)</a>
+        </div>
+        <p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.</p>
+        <p><small>※当サークルは国立天文台を応援する有志のボランティアサークルです。</small></p>
+    </footer>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const defaultMonthly = [
+            { id: "default-monthly-1", title: "宇宙の果ての巨大銀河を発見！", date: "2026年5月 更新", imgText: "（銀河の画像）", desc: "地球から130億光年以上も離れた場所に、想像以上に成長した銀河が見つかりました。タイムマシンに乗って昔の宇宙を覗いているような感覚です！", content: "#" },
+            { id: "default-monthly-2", title: "星の赤ちゃんが生まれるゆりかご", date: "2026年4月 更新", imgText: "（星が生まれる場所の画像）", desc: "チリとガスが渦巻く星雲の中で、まさに今、新しい星が誕生しようとしている様子が鮮明に撮影されました。超高解像度ならではの1枚です。", content: "#" },
+            { id: "default-monthly-3", title: "第二の地球を探して", date: "2026年3月 更新", imgText: "（惑星の画像）", desc: "すばる望遠鏡の特殊な装置を使って、太陽系外の惑星を直接撮影することに成功。そこには生命が存在するのでしょうか？", content: "#" }
+        ];
+
+        // キャッシュクリア・同期用キー
+        const VERSION_KEY = "cbs_site_version";
+        const CURRENT_VERSION = "2026_v10";
+
+        const storedVersion = localStorage.getItem(VERSION_KEY);
+        if (storedVersion !== CURRENT_VERSION) {
+            localStorage.setItem('cbs_monthly_posts', JSON.stringify(defaultMonthly));
+            localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+            location.reload();
+            return;
+        }
+
+        if (!localStorage.getItem('cbs_monthly_posts')) {
+            localStorage.setItem('cbs_monthly_posts', JSON.stringify(defaultMonthly));
+        }
+
+        let monthlyList = [];
+        try {
+            monthlyList = JSON.parse(localStorage.getItem('cbs_monthly_posts'));
+        } catch (e) {
+            monthlyList = defaultMonthly;
+        }
+
+        const container = document.getElementById("monthly-container");
+        container.innerHTML = "";
+
+        monthlyList.forEach((item, idx) => {
+            const colors = ["#0b132b", "#1c2541", "#2b3a67"];
+            const bg = colors[idx % colors.length];
+
+            // 登録されたURL（content）を設定。空の場合はデフォルト「#」に設定します
+            const postLink = item.content || "#";
+
+            const card = document.createElement("div");
+            card.className = "card";
+            card.style.background = "#fff";
+            card.style.color = "#333";
+            card.style.textAlign = "left";
+
+            card.innerHTML = `
+                <div class="dummy-img" style="background-color: ${bg}; color: #fca311; height: 200px;">${item.imgText}</div>
+                <h3 style="color: #0b132b; margin-top: 15px;">${item.title}</h3>
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">${item.date}</p>
+                <p style="font-size: 0.95rem; white-space: pre-wrap;">${item.desc}</p>
+                <a href="${postLink}" style="color: #fca311; font-weight: bold; display: inline-block; margin-top: 10px; text-decoration: none;">解説を読む →</a>
+            `;
+            container.appendChild(card);
+        });
+
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'cbs_monthly_posts' || e.key === VERSION_KEY) {
+                location.reload();
+            }
+        });
+    });
+    </script>
+</body>
+</html>
