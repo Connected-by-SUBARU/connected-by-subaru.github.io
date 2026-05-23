@@ -403,6 +403,24 @@
         sessionStorage.removeItem("wiki_uploader_authenticated");
     });
 
+    // ハッシュ化用ヘルパー関数（Web Crypto APIを使用）
+    async function sha256(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // XSS対策：HTMLタグのエスケープ処理
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#39;');
+    }
+
     // ==========================================
     // ⚙️ GitHub 連携デフォルト設定 (Wiki側)
     // admin.htmlに入力したものと全く同じ内容をここに記述します
@@ -516,23 +534,23 @@
             &lt;header class="article-header"&gt;
                 &lt;span class="article-date"&gt;【更新年月 例: 2026年6月 更新】&lt;/span&gt;
                 &lt;h1&gt;【ここに観測テーマのタイトルを記入 例: 宇宙に咲く巨大なひまわり銀河】&lt;/h1&gt;
-            &lt;/header&gt;
+            &lt;/header>
 
             &lt;div class="article-body"&gt;
-                &lt;p&gt;ここに導入部分の短い文章（Xなどの反響、何を捉えた画像かなど）を記入します。&lt;/p>
+                &lt;p&gt;ここに導入部分の短い文章（Xなどの反響、何を捉えた画像かなど）を記入します。&lt;/p&gt;
 
-                &lt;h2&gt;🌌 捉えられた最新の宇宙画像&lt;/h2>
+                &lt;h2&gt;🌌 捉えられた最新の宇宙画像&lt;/h2&gt;
                 &lt;figure&gt;
                     &lt;div class="dummy-img"&gt;【観測画像のプレースホルダー】&lt;/div&gt;
                     &lt;figcaption&gt;画像クレジット：国立天文台(NAOJ) / すばる望遠鏡&lt;/figcaption&gt;
-                &lt;/figure>
+                &lt;/figure&gt;
 
                 &lt;h2&gt;💡 やさしくわかる3つの解説ポイント&lt;/h2&gt;
-                &lt;p&gt;数式を使わずに、中高生でも頭の中でビジュアルが浮かび上がるように記述しましょう。&lt;/p>
+                &lt;p&gt;数式を使わずに、中高生でも頭の中でビジュアルが浮かび上がるように記述しましょう。&lt;/p&gt;
                 &lt;ul&gt;
                     &lt;li&gt;&lt;strong&gt;ポイント1（何がすごいのか）：&lt;/strong&gt; 新しく判明した構造や発見の意義を解説します。&lt;/li&gt;
                     &lt;li&gt;&lt;strong&gt;ポイント2（地球からの距離）：&lt;/strong&gt; 遠さを日常や歴史的なタイムスケールに例えてみます。&lt;/li&gt;
-                &lt;/ul>
+                &lt;/ul&gt;
             &lt;/div&gt;
             
             &lt;div style="text-align: center; margin-top: 50px;"&gt;
@@ -639,7 +657,7 @@
                             &lt;td&gt;オンライン（Zoom webinar / YouTube Live）&lt;/td&gt;
                         &lt;/tr&gt;
                     &lt;/table&gt;
-                &lt;/div>
+                &lt;/div&gt;
 
                 &lt;h2&gt;🔭 当日のタイムスケジュール&lt;/h2&gt;
                 &lt;ul&gt;
@@ -681,11 +699,11 @@
         「標高4,200mの高山病対策」「ハワイの伝統ナビゲーションと星」「主鏡はどうやって掃除する？」など、読者の知的好奇心をくすぐるテーマを設定して原稿を作成します。</li>
         <li><strong>ステップ2：管理者コンソール（admin.html）からの登録</strong><br>
         管理者ログイン後、「🌺 マウナケア便り」タブを開き、以下の項目を入力します：<br>
-        ・<strong>Vol</strong>：コラムの通し番号（例：Vol. 4）<br>
-        ・<strong>記事のタイトル</strong>：中身が気になるような見出し（例：山頂の寒さはどれくらい？研究者の防寒の工夫）<br>
-        ・<strong>画像プレースホルダー表示名</strong>：左側に表示されるアイキャッチ用の画像イメージ（例：雪の積もるドーム）<br>
-        ・<strong>本文の要約・抜粋</strong>：一覧画面に表示されるコラムのあらすじや導入文（3行程度）<br>
-        ・<strong>詳細ページのURL / HTMLファイル名</strong>：コラムの本文が書かれた詳細HTMLファイル（例：<code>maunakea-vol4.html</code>など）をアップロードし、そのファイル名またはURLを指定します。</li>
+        ·<strong>Vol</strong>：コラムの通し番号（例：Vol. 4）<br>
+        ·<strong>記事のタイトル</strong>：中身が気になるような見出し（例：山頂の寒さはどれくらい？研究者の防寒の工夫）<br>
+        ·<strong>画像プレースホルダー表示名</strong>：左側に表示されるアイキャッチ用の画像イメージ（例：雪の積もるドーム）<br>
+        ·<strong>本文の要約・抜粋</strong>：一覧画面に表示されるコラムのあらすじや導入文（3行程度）<br>
+        ·<strong>詳細ページのURL / HTMLファイル名</strong>：コラムの本文が書かれた詳細HTMLファイル（例：<code>maunakea-vol4.html</code>など）をアップロードし、そのファイル名またはURLを指定します。</li>
         <li><strong>ステップ3：登録と表示確認</strong><br>
         「コラム記事を発行する」をクリックします。<a href="maunakea.html" target="_blank">maunakea.html</a>（マウナケア便り）を開き、新コラムのカードが追加され、「記事を読む →」から執筆した本文ページへ正しく遷移するか確認してください。</li>
     </ul>
@@ -779,10 +797,10 @@
         編集が完了したファイルを、サークルのWebサーバー上（<code>index.html</code>や<code>blog.html</code>と同じ同一階層、またはアップロード用の指定フォルダ）へ配置・アップロードします。</li>
         <li><strong>ステップ4：コンテンツ管理システム（admin.html）から紐付けを行う</strong><br>
         管理者用ログイン画面（<a href="admin.html" target="_blank">admin.html</a>）へ進み、管理パスワード（<code>cbsadmin2026</code>）を使ってログインします。上部タブの「📝 ブログ」を選択した状態で、以下の各入力項目を埋めます：<br>
-        ・<strong>記事タイトル</strong>：一覧に並ぶブログカードのタイトル（例：ハワイの夜空を見上げて）<br>
-        ・<strong>投稿日付</strong>：作成・公開時の日付（例：2026年5月22日）<br>
-        ・<strong>概要/紹介文</strong>：一覧画面で記事の簡単な予告となる1〜2行程度の紹介用テキスト<br>
-        ・<strong>詳細ページのURL / HTMLファイル名</strong>：ステップ3でサーバーにアップした自作のファイル名（例：<code>blog-shinchaku.html</code>、または外部に配置したURL）を入力します。</li>
+        ·<strong>記事タイトル</strong>：一覧に並ぶブログカードのタイトル（例：ハワイの夜空を見上げて）<br>
+        ·<strong>投稿日付</strong>：作成・公開時の日付（例：2026年5月22日）<br>
+        ·<strong>概要/紹介文</strong>：一覧画面で記事の簡単な予告となる1〜2行程度の紹介用テキスト<br>
+        ·<strong>詳細ページのURL / HTMLファイル名</strong>：ステップ3でサーバーにアップした自作のファイル名（例：<code>blog-shinchaku.html</code>、または外部に配置したURL）を入力します。</li>
         <li><strong>ステップ5：登録内容を保存して確認する</strong><br>
         「ブログを発行・更新する」ボタンを押すと保存が完了します。実際にブログ一覧ページ（<a href="blog.html" target="_blank">blog.html</a>）をブラウザで表示し、追加した記事カードが表示され、そこから「続きを読む →」をクリックした際に自作したページにリンクが繋がっているか確認してください。</li>
     </ul>
@@ -863,9 +881,9 @@
                             &lt;td&gt;パスポート、防寒用の厚手の衣服、高山病対策グッズ&lt;/td&gt;
                         &lt;/tr&gt;
                     &lt;/table&gt;
-                &lt;/div>
+                &lt;/div&gt;
 
-                &lt;h2&gt;まとめ・今後の展望&lt;/h2&gt;
+                &lt;h2&gt;まとめ・今後の展望&lt;/h2>
                 &lt;p&gt;記事のまとめ部分をここに記載します。サークルとしてのこれからの活動に向けた決意や、応援メッセージへの感謝などを書き添えてクローズします。&lt;/p>
             &lt;/div&gt;
             
@@ -984,12 +1002,16 @@
         showWiki();
     }
 
-    function unlockWiki(event) {
+    // ログイン検証（非同期化とハッシュ比較）
+    async function unlockWiki(event) {
         event.preventDefault();
         const passInput = document.getElementById("wiki-password").value;
-        const correctPassword = "subaru2026"; 
+        
+        // 「subaru2026」のSHA-256ハッシュ値
+        const correctPasswordHash = "6377fc0b14ea9f268b8b0e77d70bc7066ae9781600869e5d4cb05c19ee8fa068"; 
+        const inputHash = await sha256(passInput);
 
-        if (passInput === correctPassword) {
+        if (inputHash === correctPasswordHash) {
             sessionStorage.setItem("wiki_authenticated", "true");
             showWiki();
         } else {
@@ -1036,7 +1058,7 @@
         renderWikiBody();
     }
 
-    // Wiki上の変更内容（Wiki文書・掲示板など）をGitHub上のdata.jsonへコミット・自動保存する仕組み
+    // Wiki側：データ更新時のセーフマージ同期処理
     async function syncDataToGithub() {
         const token = localStorage.getItem("cbs_api_token") || DEFAULT_API_TOKEN;
         const owner = localStorage.getItem("cbs_api_owner") || DEFAULT_API_OWNER;
@@ -1047,27 +1069,11 @@
             return false;
         }
 
-        // 送信用の一体化JSONファイルを再構築します
-        const dataObj = {
-            blog: JSON.parse(localStorage.getItem('cbs_blog_posts') || '[]'),
-            events: JSON.parse(localStorage.getItem('cbs_events_posts') || '[]'),
-            monthly: JSON.parse(localStorage.getItem('cbs_monthly_posts') || '[]'),
-            maunakea: JSON.parse(localStorage.getItem('cbs_maunakea_posts') || '[]'),
-            members: JSON.parse(localStorage.getItem('cbs_members_posts') || '[]'),
-            wiki_content: localStorage.getItem('cbs_wiki_content') || "",
-            wiki_notes: JSON.parse(localStorage.getItem('cbs_wiki_notes') || '{}'),
-            wiki_history: JSON.parse(localStorage.getItem('cbs_wiki_history') || '[]')
-        };
-
-        const jsonStr = JSON.stringify(dataObj, null, 2);
-        const uint8array = new TextEncoder().encode(jsonStr);
-        const binString = Array.from(uint8array, (byte) => String.fromCharCode(byte)).join("");
-        const contentBase64 = btoa(binString);
-
-        const path = "data.json";
-        const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+        const url = `https://api.github.com/repos/${owner}/${repo}/contents/data.json`;
         let sha = null;
+        let serverData = {};
 
+        // 1. 最新の data.json をフェッチ
         try {
             const checkRes = await fetch(url, {
                 headers: {
@@ -1078,8 +1084,38 @@
             if (checkRes.status === 200) {
                 const checkData = await checkRes.json();
                 sha = checkData.sha;
+                const decodedStr = decodeURIComponent(escape(atob(checkData.content.replace(/\s/g, ""))));
+                serverData = JSON.parse(decodedStr);
             }
-        } catch (e) {}
+        } catch (e) {
+            console.warn("Could not fetch remote data.json for merging inside Wiki. Using local values.", e);
+        }
+
+        // 2. ローカルにデータが存在する場合のみ上書き。無いキーはサーバーのデータを維持
+        const localBlog = localStorage.getItem('cbs_blog_posts');
+        const localEvents = localStorage.getItem('cbs_events_posts');
+        const localMonthly = localStorage.getItem('cbs_monthly_posts');
+        const localMaunakea = localStorage.getItem('cbs_maunakea_posts');
+        const localMembers = localStorage.getItem('cbs_members_posts');
+        const localWiki = localStorage.getItem('cbs_wiki_content');
+        const localNotes = localStorage.getItem('cbs_wiki_notes');
+        const localHistory = localStorage.getItem('cbs_wiki_history');
+
+        const payload = {
+            blog: localBlog !== null ? JSON.parse(localBlog) : (serverData.blog || []),
+            events: localEvents !== null ? JSON.parse(localEvents) : (serverData.events || []),
+            monthly: localMonthly !== null ? JSON.parse(localMonthly) : (serverData.monthly || []),
+            maunakea: localMaunakea !== null ? JSON.parse(localMaunakea) : (serverData.maunakea || []),
+            members: localMembers !== null ? JSON.parse(localMembers) : (serverData.members || []),
+            wiki_content: localWiki !== null ? localWiki : (serverData.wiki_content || ""),
+            wiki_notes: localNotes !== null ? JSON.parse(localNotes) : (serverData.wiki_notes || {}),
+            wiki_history: localHistory !== null ? JSON.parse(localHistory) : (serverData.wiki_history || [])
+        };
+
+        const jsonStr = JSON.stringify(payload, null, 2);
+        const uint8array = new TextEncoder().encode(jsonStr);
+        const binString = Array.from(uint8array, (byte) => String.fromCharCode(byte)).join("");
+        const contentBase64 = btoa(binString);
 
         const bodyData = {
             message: "Update database (data.json) via Wiki Interaction",
@@ -1357,7 +1393,7 @@
         // 返信フォーム側の選択肢も、匿名メンバーが先頭に来るようにHTML文字列を生成
         let selectOptionsHTML = `<option value="匿名メンバー">匿名メンバー</option>`;
         membersList.forEach(mem => {
-            selectOptionsHTML += `<option value="${mem.name}">${mem.name}</option>`;
+            selectOptionsHTML += `<option value="${escapeHtml(mem.name)}">${escapeHtml(mem.name)}</option>`;
         });
 
         let notes = {};
@@ -1388,7 +1424,7 @@
             threadDiv.style.marginBottom = "20px";
             threadDiv.style.boxShadow = "0 2px 5px rgba(0,0,0,0.02)";
 
-            const avatarChar = comment.author.charAt(0);
+            const avatarChar = escapeHtml(comment.author).charAt(0);
 
             let repliesHTML = "";
             if (comment.replies && comment.replies.length > 0) {
@@ -1398,16 +1434,16 @@
 
                 repliesHTML = `<div style="margin-left: 50px; margin-top: 15px; border-left: 2px solid #eaecf0; padding-left: 15px;">`;
                 sortedReplies.forEach(reply => {
-                    const rAvatar = reply.author.charAt(0);
+                    const rAvatar = escapeHtml(reply.author).charAt(0);
                     repliesHTML += `
                         <div style="display: flex; gap: 12px; margin-bottom: 12px; font-size: 0.85rem;">
                             <div style="width: 28px; height: 28px; border-radius: 50%; background-color: #34495e; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.75rem; flex-shrink: 0;">${rAvatar}</div>
                             <div>
                                 <div style="display: flex; gap: 8px; align-items: baseline;">
-                                    <strong style="color: #000;">${reply.author}</strong>
-                                    <span style="color: #606266; font-size: 0.75rem;">${reply.date}</span>
+                                    <strong style="color: #000;">${escapeHtml(reply.author)}</strong>
+                                    <span style="color: #606266; font-size: 0.75rem;">${escapeHtml(reply.date)}</span>
                                 </div>
-                                <p style="color: #202122; margin-top: 3px; line-height: 1.4; white-space: pre-wrap;">${reply.text}</p>
+                                <p style="color: #202122; margin-top: 3px; line-height: 1.4; white-space: pre-wrap;">${escapeHtml(reply.text)}</p>
                             </div>
                         </div>
                     `;
@@ -1421,10 +1457,10 @@
                     <div style="width: 36px; height: 36px; border-radius: 50%; background-color: #0b132b; color: #fca311; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem; flex-shrink: 0;">${avatarChar}</div>
                     <div style="flex-grow: 1;">
                         <div style="display: flex; gap: 10px; align-items: baseline;">
-                            <strong style="color: #000; font-size: 0.9rem;">${comment.author}</strong>
-                            <span style="color: #606266; font-size: 0.75rem;">${comment.date}</span>
+                            <strong style="color: #000; font-size: 0.9rem;">${escapeHtml(comment.author)}</strong>
+                            <span style="color: #606266; font-size: 0.75rem;">${escapeHtml(comment.date)}</span>
                         </div>
-                        <p style="color: #202122; margin-top: 5px; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap;">${comment.text}</p>
+                        <p style="color: #202122; margin-top: 5px; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap;">${escapeHtml(comment.text)}</p>
                         
                         <!-- 返信トグルボタン -->
                         <div style="margin-top: 8px;">
@@ -1651,11 +1687,15 @@
         }
     }
 
-    function unlockEditor() {
+    // 編集ロック解除（非同期ハッシュ検証）
+    async function unlockEditor() {
         const pass = document.getElementById("edit-password").value;
-        const correctEditPass = "swiftgo55"; 
+        
+        // 「swiftgo55」のSHA-256ハッシュ値
+        const correctEditPassHash = "1d5952fe212628469e34a6ee10ef7cf790faae88612ca49301988880d6bda450";
+        const inputHash = await sha256(pass);
 
-        if (pass === correctEditPass) {
+        if (inputHash === correctEditPassHash) {
             sessionStorage.setItem("wiki_editor_authenticated", "true");
             document.getElementById("edit-error").style.display = "none";
             checkEditorAuth();
@@ -1703,11 +1743,15 @@
         }
     }
 
-    function unlockUploader() {
+    // アップローダーロック解除（非同期ハッシュ検証）
+    async function unlockUploader() {
         const pass = document.getElementById("uploader-password").value;
-        const correctUploadPass = "Onohiulapfs"; 
+        
+        // 「Onohiulapfs」のSHA-256ハッシュ値
+        const correctUploadPassHash = "c830953a7a93540952d7634db8449c2ae59e74bf0ef26cb91599a0397500be87";
+        const inputHash = await sha256(pass);
 
-        if (pass === correctUploadPass) {
+        if (inputHash === correctUploadPassHash) {
             sessionStorage.setItem("wiki_uploader_authenticated", "true");
             document.getElementById("uploader-error").style.display = "none";
             checkUploaderAuth();
@@ -1754,7 +1798,7 @@
             localStorage.removeItem("cbs_api_repo");
         }
 
-        // ファイルをBase64にエンコードしてPUTします [5]
+        // ファイルをBase64にエンコードしてPUTします
         const reader = new FileReader();
         reader.onload = async function(e) {
             const contentBase64 = e.target.result.split(',')[1];
