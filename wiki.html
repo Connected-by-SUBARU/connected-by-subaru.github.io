@@ -1009,11 +1009,27 @@
                 if (data.wiki_content) localStorage.setItem('cbs_wiki_content', data.wiki_content);
                 if (data.wiki_notes) localStorage.setItem('cbs_wiki_notes', JSON.stringify(data.wiki_notes));
                 if (data.wiki_history) localStorage.setItem('cbs_wiki_history', JSON.stringify(data.wiki_history));
+                
+                // 🛠️ 【追加】メンバーデータもサーバーから取得してキャッシュを更新する
+                if (data.members) localStorage.setItem('cbs_members_posts', JSON.stringify(data.members));
+                
                 localStorage.setItem(WIKI_VERSION_KEY, CURRENT_WIKI_VERSION);
             }
         } catch(e) {
             console.warn("Could not fetch data.json inside Wiki, using local storage cache.", e);
         }
+
+        const storedVersion = localStorage.getItem(WIKI_VERSION_KEY);
+        if (storedVersion !== CURRENT_WIKI_VERSION) {
+            localStorage.setItem("cbs_wiki_content", defaultWikiContent);
+            localStorage.setItem(WIKI_VERSION_KEY, CURRENT_WIKI_VERSION);
+            localStorage.removeItem("cbs_wiki_history");
+            localStorage.setItem("cbs_wiki_notes", JSON.stringify(defaultNoteData));
+        }
+
+        initWikiHistory();
+        renderWikiBody();
+    }
 
         const storedVersion = localStorage.getItem(WIKI_VERSION_KEY);
         if (storedVersion !== CURRENT_WIKI_VERSION) {
