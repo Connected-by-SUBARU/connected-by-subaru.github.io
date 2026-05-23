@@ -448,7 +448,7 @@
             for (i = 0; i < m.length; i += 16) {
                 a = HASH[0]; b = HASH[1]; c = HASH[2]; d = HASH[3]; e = HASH[4]; f = HASH[5]; g = HASH[6]; h = HASH[7];
                 for (j = 0; j < 64; j++) {
-                    if (j < 16) w[j] = m[j + i];
+                    if (j < 16) w[j] = m[j + i] || 0;
                     else w[j] = safe_add(safe_add(safe_add(gamma1256(w[j - 2]), w[j - 7]), gamma0256(w[j - 15])), w[j - 16]);
                     T1 = safe_add(safe_add(safe_add(safe_add(h, Sigma1256(e)), Ch(e, f, g)), K[j]), w[j]);
                     T2 = safe_add(Sigma0256(a), Maj(a, b, c));
@@ -496,7 +496,7 @@
     // ログイン検証
     async function unlockAdmin(event) {
         event.preventDefault();
-        const passInput = document.getElementById("admin-password").value;
+        const passInput = document.getElementById("admin-password").value.trim();
     
         // 「maxihete」のSHA-256ハッシュ値
         const correctPasswordHash = "237bf30db52e1bdf6961448b1fc9fb1ec28f41f71f697475fdfef10c7104b2b7"; 
