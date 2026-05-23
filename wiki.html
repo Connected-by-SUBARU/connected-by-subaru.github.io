@@ -408,7 +408,7 @@
     // admin.htmlに入力したものと全く同じ内容をここに記述します
     // ==========================================
     const DEFAULT_API_TOKEN = ""; 
-    const DEFAULT_API_OWNER = "onnected-by-SUBARU";                                    
+    const DEFAULT_API_OWNER = "Connected-by-SUBARU";                                    
     const DEFAULT_API_REPO  = "connected-by-subaru.github.io";                                   
     // ==========================================
 
@@ -509,7 +509,7 @@
                 &lt;li&gt;&lt;a href="index.html#join"&gt;お問い合わせ&lt;/a&gt;&lt;/li&gt;
             &lt;/ul&gt;
         &lt;/nav&gt;
-    &lt;/header&gt;
+    &lt;/header>
 
     &lt;main class="blog-container"&gt;
         &lt;article class="blog-article"&gt;
@@ -673,7 +673,7 @@
     <h1 class="wiki-article-title">🌺 「マウナケア便り」追加手順とコラム執筆ガイド</h1>
     <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
 
-    <p>「マウナケア便り」は、すばる望遠鏡があるハワイ・マウナケア山頂のユニークな環境やハワイの伝統文化、天体観測の舞台裏などを親しみやすいエッセイ形式で紹介するコラムコーナーです。</p>
+    <p>「マウナケア便り」は、すばる望遠鏡があるハワイ・マウナケア山頂のユニークな環境やハワイの伝統文化、天体観測の舞台裏などを親しみやすいエッセに形式で紹介するコラムコーナーです。</p>
     
     <h2>📋 追加・変更の手順フロー</h2>
     <ul>
@@ -772,7 +772,7 @@
     <p>ブログの自作から登録完了までの基本的な作業フローは、以下の5つの手順に沿って行います：</p>
     <ul>
         <li><strong>ステップ1：本ページ内のHTMLテンプレートをコピーする</strong><br>
-        leftメニューまたは目次から「公式HTMLテンプレート」を開き、コードをすべてコピーします。お使いのテキストエディタに貼り付け、好みのファイル名（例：<code>blog-shinchaku.html</code>）を付けてローカルPC環境に保存します。</li>
+        leftメニューまたは目次から「公式HTMLテンプレート」を開き、コードをすべてコピーします。お使い of テキストエディタに貼り付け、好みのファイル名（例：<code>blog-shinchaku.html</code>）を付けてローカルPC環境に保存します。</li>
         <li><strong>ステップ2：記事のテキストや見出しを自由に書き換える</strong><br>
         テンプレート内の指定箇所（タイトル・日付・本文・写真の説明文など）をご自身の作成するコラム内容に書き換えます。見出しや段落は最初から見やすくデザインされているため、中身を差し替えるだけで自動的に整います。</li>
         <li><strong>ステップ3：作成したファイルをWebサーバーへアップロードする</strong><br>
@@ -1023,30 +1023,6 @@
         } catch(e) {
             console.warn("Could not fetch data.json inside Wiki, using local storage cache.", e);
         }
-
-        const storedVersion = localStorage.getItem(WIKI_VERSION_KEY);
-        if (storedVersion !== CURRENT_WIKI_VERSION) {
-            localStorage.setItem("cbs_wiki_content", defaultWikiContent);
-            localStorage.setItem(WIKI_VERSION_KEY, CURRENT_WIKI_VERSION);
-            localStorage.removeItem("cbs_wiki_history");
-            localStorage.setItem("cbs_wiki_notes", JSON.stringify(defaultNoteData));
-        }
-
-        initWikiHistory();
-        renderWikiBody();
-    }
-
-        const storedVersion = localStorage.getItem(WIKI_VERSION_KEY);
-        if (storedVersion !== CURRENT_WIKI_VERSION) {
-            localStorage.setItem("cbs_wiki_content", defaultWikiContent);
-            localStorage.setItem(WIKI_VERSION_KEY, CURRENT_WIKI_VERSION);
-            localStorage.removeItem("cbs_wiki_history");
-            localStorage.setItem("cbs_wiki_notes", JSON.stringify(defaultNoteData));
-        }
-
-        initWikiHistory();
-        renderWikiBody();
-    }
 
         const storedVersion = localStorage.getItem(WIKI_VERSION_KEY);
         if (storedVersion !== CURRENT_WIKI_VERSION) {
