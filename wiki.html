@@ -1006,11 +1006,16 @@
             const res = await fetch('./data.json?t=' + Date.now());
             if (res.ok) {
                 const data = await res.json();
+                // 1. Wiki関連データを保存
                 if (data.wiki_content) localStorage.setItem('cbs_wiki_content', data.wiki_content);
                 if (data.wiki_notes) localStorage.setItem('cbs_wiki_notes', JSON.stringify(data.wiki_notes));
                 if (data.wiki_history) localStorage.setItem('cbs_wiki_history', JSON.stringify(data.wiki_history));
                 
-                // 🛠️ 【追加】メンバーデータもサーバーから取得してキャッシュを更新する
+                // 🛠️ 【致命的なバグ対策】他のカテゴリのデータも同期して退避し、白紙化を防ぐ
+                if (data.blog) localStorage.setItem('cbs_blog_posts', JSON.stringify(data.blog));
+                if (data.events) localStorage.setItem('cbs_events_posts', JSON.stringify(data.events));
+                if (data.monthly) localStorage.setItem('cbs_monthly_posts', JSON.stringify(data.monthly));
+                if (data.maunakea) localStorage.setItem('cbs_maunakea_posts', JSON.stringify(data.maunakea));
                 if (data.members) localStorage.setItem('cbs_members_posts', JSON.stringify(data.members));
                 
                 localStorage.setItem(WIKI_VERSION_KEY, CURRENT_WIKI_VERSION);
@@ -1018,6 +1023,18 @@
         } catch(e) {
             console.warn("Could not fetch data.json inside Wiki, using local storage cache.", e);
         }
+
+        const storedVersion = localStorage.getItem(WIKI_VERSION_KEY);
+        if (storedVersion !== CURRENT_WIKI_VERSION) {
+            localStorage.setItem("cbs_wiki_content", defaultWikiContent);
+            localStorage.setItem(WIKI_VERSION_KEY, CURRENT_WIKI_VERSION);
+            localStorage.removeItem("cbs_wiki_history");
+            localStorage.setItem("cbs_wiki_notes", JSON.stringify(defaultNoteData));
+        }
+
+        initWikiHistory();
+        renderWikiBody();
+    }
 
         const storedVersion = localStorage.getItem(WIKI_VERSION_KEY);
         if (storedVersion !== CURRENT_WIKI_VERSION) {
