@@ -261,7 +261,7 @@
     <!-- Wiki全体エリア（デフォルト時は非表示） -->
     <div id="wiki-main-content" class="wiki-layout" style="display: none;">
         
-        <!-- 左サイドバー（HTML内のサブページ構造から全自動で項目が動的生成されます） -->
+        <!-- 左サイドバー -->
         <aside class="wiki-sidebar" id="wiki-sidebar-dynamic">
             <div class="wiki-sidebar-logo">CbS Wiki Nav</div>
             <!-- JSで動的にメニューが挿入されます -->
@@ -286,7 +286,7 @@
 
                 <!-- ================= 閲覧モード用 ================= -->
                 <div id="wiki-view-panel">
-                    <!-- 本文エリア (JavaScriptによりサブページが描画・制御されます) -->
+                    <!-- 本文エリア -->
                     <div id="wiki-rendered-body" class="wiki-body-content">
                         <!-- ここにLocalStorageのHTMLがそのまま読み込まれます -->
                     </div>
@@ -344,7 +344,7 @@
                 <!-- ================= ノート（掲示板）モード用 ================= -->
                 <div id="wiki-note-panel" style="display: none;">
                     <h1 class="wiki-article-title" id="note-topic-title">💬 メンバー専用ノート議論掲示板</h1>
-                    <div class="wiki-article-subtitle">記事 of 更新、サークル運営、活動方針などについて議論する専用掲示板です。</div>
+                    <div class="wiki-article-subtitle">記事の更新、サークル運営、活動方針などについて議論する専用掲示板です。</div>
 
                     <!-- トピック（ページ）切り替え用ボタンリスト -->
                     <div style="display: flex; gap: 8px; margin-bottom: 25px; flex-wrap: wrap;">
@@ -360,7 +360,6 @@
                         <form id="note-comment-form" onsubmit="postParentComment(event)">
                             <div style="display: flex; gap: 10px; margin-bottom: 12px; align-items: center;">
                                 <label for="comment-author" style="font-size: 0.85rem; font-weight: bold;">投稿者：</label>
-                                <!-- 匿名メンバーが最初になるようにJSで動的生成されます -->
                                 <select id="comment-author" style="padding: 6px 12px; border: 1px solid #a2a9b1; border-radius: 3px; font-size: 0.85rem; background: #fff;">
                                 </select>
                             </div>
@@ -392,17 +391,11 @@
             <a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;">(管理者ログイン)</a>
         </div>
         <p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.</p>
-        <p><small>※当サークルは国立天文台を応援する有志 of ボランティアサークルです。</small></p>
+        <p><small>※当サークルは国立天文台を応援する有志のボランティアサークルです。</small></p>
     </footer>
 
     <!-- Wiki動作ロジックスクリプト -->
     <script>
-    // 離脱・リロードした瞬間に「編集・アップロード権限セッション」のみ即座に破棄
-    window.addEventListener("beforeunload", function() {
-        sessionStorage.removeItem("wiki_editor_authenticated");
-        sessionStorage.removeItem("wiki_uploader_authenticated");
-    });
-
     // ハッシュ化用ヘルパー関数（Web Crypto APIを使用）
     async function sha256(message) {
         const msgBuffer = new TextEncoder().encode(message);
@@ -423,14 +416,13 @@
 
     // ==========================================
     // ⚙️ GitHub 連携デフォルト設定 (Wiki側)
-    // admin.htmlに入力したものと全く同じ内容をここに記述します
     // ==========================================
     const DEFAULT_API_TOKEN = ""; 
     const DEFAULT_API_OWNER = "Connected-by-SUBARU";                                    
     const DEFAULT_API_REPO  = "connected-by-subaru.github.io";                                   
     // ==========================================
 
-    // 規定の表示コンテンツ (大枠カテゴリごとに class="wiki-subpage" で切り分け管理)
+    // 規定の表示コンテンツ
     const defaultWikiContent = `
 <div id="wiki-page-basic" class="wiki-subpage" data-menu-category="基本方針" data-menu-title="1 メインページ / 基本方針">
     <h1 class="wiki-article-title">📢 CbS 活動理念と基本方針</h1>
@@ -461,9 +453,9 @@
 
     <h2>📝 今後のプロジェクト＆企画書</h2>
     <p><strong>1. 国立天文台への新しい「すばる望遠鏡公式グッズ」提案企画</strong><br>
-    ・天の川レーザー射出の様子を再現した蓄光ピンバッジ of 設計書（ミサキ・コウタ担当）<br>
+    ・天の川レーザー射出の様子を再現した蓄光ピンバッジの設計書（ミサキ・コウタ担当）<br>
     ・中高生向け学習用パンフレット案の草稿</p>
-    <p><strong>2. 夏 of オンライン星空観望会（7/11）の役割分担</strong><br>
+    <p><strong>2. 夏のオンライン星空観望会（7/11）の役割分担</strong><br>
     ・配信・配信システム構築：コウタ<br>
     ・星空解説の資料・トークスクリプト作成：アキト・ハルナ</p>
 
@@ -484,7 +476,7 @@
         <li><strong>ステップ1：紹介する観測成果の選定</strong><br>
         国立天文台（NAOJ）のプレスリリースや、すばる望遠鏡公式ウェブサイト、公式Xから、中高生や一般の方が興味を持ちそうなビジュアル（美しい銀河、星雲、惑星など）のリリースを選びます。</li>
         <li><strong>ステップ2：やさしい解説文の作成</strong><br>
-        「130億光年」「ダークマター」といった言葉を使う際は、それがどのような意味なのか一言で補足するなど、噛み砕いた文章を作成します。数式や難解な学術記号は使わないのがCbS of 広報ポリシーです。</li>
+        「130億光年」「ダークマター」といった言葉を使う際は、それがどのような意味なのか一言で補足するなど、噛み砕いた文章を作成します。数式や難解な学術記号は使わないのがCbSの広報ポリシーです。</li>
         <li><strong>ステップ3：管理者コンソール（admin.html）からの登録</strong><br>
         管理者ログイン後、「🌌 今月のすばる」タブを開き、以下の各項目を入力します：<br>
         ・<strong>タイトル（観測成果の簡易説明）</strong>：観測成果をキャッチーに説明した文（例：宇宙に咲く巨大なひまわり銀河！）<br>
@@ -534,19 +526,19 @@
             &lt;header class="article-header"&gt;
                 &lt;span class="article-date"&gt;【更新年月 例: 2026年6月 更新】&lt;/span&gt;
                 &lt;h1&gt;【ここに観測テーマのタイトルを記入 例: 宇宙に咲く巨大なひまわり銀河】&lt;/h1&gt;
-            &lt;/header>
+            &lt;/header&gt;
 
             &lt;div class="article-body"&gt;
-                &lt;p&gt;ここに導入部分の短い文章（Xなどの反響、何を捉えた画像かなど）を記入します。&lt;/p&gt;
+                &lt;p&gt;ここに導入部分の短い文章（Xなどの反響、何を捉えた画像かなど）を記入します。&lt;/p>
 
                 &lt;h2&gt;🌌 捉えられた最新の宇宙画像&lt;/h2&gt;
                 &lt;figure&gt;
                     &lt;div class="dummy-img"&gt;【観測画像のプレースホルダー】&lt;/div&gt;
                     &lt;figcaption&gt;画像クレジット：国立天文台(NAOJ) / すばる望遠鏡&lt;/figcaption&gt;
-                &lt;/figure&gt;
+                &lt;/figure>
 
                 &lt;h2&gt;💡 やさしくわかる3つの解説ポイント&lt;/h2&gt;
-                &lt;p&gt;数式を使わずに、中高生でも頭の中でビジュアルが浮かび上がるように記述しましょう。&lt;/p&gt;
+                &lt;p&gt;数式を使わずに、中高生でも頭の中でビジュアルが浮かび上がるように記述しましょう。&lt;/p>
                 &lt;ul&gt;
                     &lt;li&gt;&lt;strong&gt;ポイント1（何がすごいのか）：&lt;/strong&gt; 新しく判明した構造や発見の意義を解説します。&lt;/li&gt;
                     &lt;li&gt;&lt;strong&gt;ポイント2（地球からの距離）：&lt;/strong&gt; 遠さを日常や歴史的なタイムスケールに例えてみます。&lt;/li&gt;
@@ -591,7 +583,7 @@
         ・<strong>イベント詳細説明</strong>：見どころやタイムスケジュール、対象者、参加費用などを4〜5行程度で記述します。<br>
         ・<strong>詳細ページのURL / HTMLファイル名</strong>：申し込み用フォーム（Googleフォーム等）や、より詳しい詳細特設ページのURLを入力します。</li>
         <li><strong>ステップ3：登録と表示確認</strong><br>
-        「イベント告知を発行する」をクリックします。<a href="events.html" target="_blank">events.html</a>（イベント告知）を開き、正しく新イベントが追加されているか、また受付ステータスのバッジの色（「参加受付中」はオレンジ of 枠線と赤いバッジ、「終了しました」はグレーの枠線とバッジ）が正しく表示されているか確認します。</li>
+        「イベント告知を発行する」をクリックします。<a href="events.html" target="_blank">events.html</a>（イベント告知）を開き、正しく新イベントが追加されているか、また受付ステータスのバッジの色（「参加受付中」はオレンジの枠線と赤いバッジ、「終了しました」はグレーの枠線とバッジ）が正しく表示されているか確認します。</li>
     </ul>
 </div>
 
@@ -691,7 +683,7 @@
     <h1 class="wiki-article-title">🌺 「マウナケア便り」追加手順とコラム執筆ガイド</h1>
     <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
 
-    <p>「マウナケア便り」は、すばる望遠鏡があるハワイ・マウナケア山頂のユニークな環境やハワイの伝統文化、天体観測の舞台裏などを親しみやすいエッセに形式で紹介するコラムコーナーです。</p>
+    <p>「マウナケア便り」は、すばる望遠鏡があるハワイ・マウナケア山頂のユニークな環境やハワイの伝統文化、天体観測の舞台裏などを親しみやすいエッセイ形式で紹介するコラムコーナーです。</p>
     
     <h2>📋 追加・変更の手順フロー</h2>
     <ul>
@@ -699,11 +691,11 @@
         「標高4,200mの高山病対策」「ハワイの伝統ナビゲーションと星」「主鏡はどうやって掃除する？」など、読者の知的好奇心をくすぐるテーマを設定して原稿を作成します。</li>
         <li><strong>ステップ2：管理者コンソール（admin.html）からの登録</strong><br>
         管理者ログイン後、「🌺 マウナケア便り」タブを開き、以下の項目を入力します：<br>
-        ·<strong>Vol</strong>：コラムの通し番号（例：Vol. 4）<br>
-        ·<strong>記事のタイトル</strong>：中身が気になるような見出し（例：山頂の寒さはどれくらい？研究者の防寒の工夫）<br>
-        ·<strong>画像プレースホルダー表示名</strong>：左側に表示されるアイキャッチ用の画像イメージ（例：雪の積もるドーム）<br>
-        ·<strong>本文の要約・抜粋</strong>：一覧画面に表示されるコラムのあらすじや導入文（3行程度）<br>
-        ·<strong>詳細ページのURL / HTMLファイル名</strong>：コラムの本文が書かれた詳細HTMLファイル（例：<code>maunakea-vol4.html</code>など）をアップロードし、そのファイル名またはURLを指定します。</li>
+        ・<strong>Vol</strong>：コラムの通し番号（例：Vol. 4）<br>
+        ・<strong>記事のタイトル</strong>：中身が気になるような見出し（例：山頂の寒さはどれくらい？研究者の防寒の工夫）<br>
+        ・<strong>画像プレースホルダー表示名</strong>：左側に表示されるアイキャッチ用の画像イメージ（例：雪の積もるドーム）<br>
+        ・<strong>本文の要約・抜粋</strong>：一覧画面に表示されるコラムのあらすじや導入文（3行程度）<br>
+        ・<strong>詳細ページのURL / HTMLファイル名</strong>：コラムの本文が書かれた詳細HTMLファイル（例：<code>maunakea-vol4.html</code>など）をアップロードし、そのファイル名またはURLを指定します。</li>
         <li><strong>ステップ3：登録と表示確認</strong><br>
         「コラム記事を発行する」をクリックします。<a href="maunakea.html" target="_blank">maunakea.html</a>（マウナケア便り）を開き、新コラムのカードが追加され、「記事を読む →」から執筆した本文ページへ正しく遷移するか確認してください。</li>
     </ul>
@@ -757,9 +749,9 @@
                 &lt;figure&gt;
                     &lt;div class="dummy-img"&gt;【ここに風景写真などを配置】&lt;/div&gt;
                     &lt;figcaption&gt;写真：雲海が広がる夕暮れ時のマウナケア山頂ドーム（©国立天文台）&lt;/figcaption&gt;
-                &lt;/figure>
+                &lt;/figure&gt;
 
-                &lt;h2&gt;🌺 ハワイの歴史と星たちの結びつき&lt;/h2>
+                &lt;h2&gt;🌺 ハワイの歴史と星たちの結びつき&lt;/h2&gt;
                 &lt;p&gt;ここに2つ目のトピックやエッセイとしてのまとめ段落を記述し、サークルメンバー独自の視点や感想を付け加えます。&lt;/p>
             &lt;/div&gt;
             
@@ -790,17 +782,17 @@
     <p>ブログの自作から登録完了までの基本的な作業フローは、以下の5つの手順に沿って行います：</p>
     <ul>
         <li><strong>ステップ1：本ページ内のHTMLテンプレートをコピーする</strong><br>
-        leftメニューまたは目次から「公式HTMLテンプレート」を開き、コードをすべてコピーします。お使い of テキストエディタに貼り付け、好みのファイル名（例：<code>blog-shinchaku.html</code>）を付けてローカルPC環境に保存します。</li>
+        左メニューまたは目次から「公式HTMLテンプレート」を開き、コードをすべてコピーします。お使いのテキストエディタに貼り付け、好みのファイル名（例：<code>blog-shinchaku.html</code>）を付けてローカルPC環境に保存します。</li>
         <li><strong>ステップ2：記事のテキストや見出しを自由に書き換える</strong><br>
         テンプレート内の指定箇所（タイトル・日付・本文・写真の説明文など）をご自身の作成するコラム内容に書き換えます。見出しや段落は最初から見やすくデザインされているため、中身を差し替えるだけで自動的に整います。</li>
         <li><strong>ステップ3：作成したファイルをWebサーバーへアップロードする</strong><br>
         編集が完了したファイルを、サークルのWebサーバー上（<code>index.html</code>や<code>blog.html</code>と同じ同一階層、またはアップロード用の指定フォルダ）へ配置・アップロードします。</li>
         <li><strong>ステップ4：コンテンツ管理システム（admin.html）から紐付けを行う</strong><br>
-        管理者用ログイン画面（<a href="admin.html" target="_blank">admin.html</a>）へ進み、管理パスワード（<code>cbsadmin2026</code>）を使ってログインします。上部タブの「📝 ブログ」を選択した状態で、以下の各入力項目を埋めます：<br>
-        ·<strong>記事タイトル</strong>：一覧に並ぶブログカードのタイトル（例：ハワイの夜空を見上げて）<br>
-        ·<strong>投稿日付</strong>：作成・公開時の日付（例：2026年5月22日）<br>
-        ·<strong>概要/紹介文</strong>：一覧画面で記事の簡単な予告となる1〜2行程度の紹介用テキスト<br>
-        ·<strong>詳細ページのURL / HTMLファイル名</strong>：ステップ3でサーバーにアップした自作のファイル名（例：<code>blog-shinchaku.html</code>、または外部に配置したURL）を入力します。</li>
+        管理者用ログイン画面（<a href="admin.html" target="_blank">admin.html</a>）へ進み、管理パスワードを入力してログインします。上部タブの「📝 ブログ」を選択した状態で、以下の各入力項目を埋めます：<br>
+        ・<strong>記事タイトル</strong>：一覧に並ぶブログカードのタイトル（例：ハワイの夜空を見上げて）<br>
+        ・<strong>投稿日付</strong>：作成・公開時の日付（例：2026年5月22日）<br>
+        ・<strong>概要/紹介文</strong>：一覧画面で記事の簡単な予告となる1〜2行程度の紹介用テキスト<br>
+        ・<strong>詳細ページのURL / HTMLファイル名</strong>：ステップ3でサーバーにアップした自作のファイル名（例：<code>blog-shinchaku.html</code>、または外部に配置したURL）を入力します。</li>
         <li><strong>ステップ5：登録内容を保存して確認する</strong><br>
         「ブログを発行・更新する」ボタンを押すと保存が完了します。実際にブログ一覧ページ（<a href="blog.html" target="_blank">blog.html</a>）をブラウザで表示し、追加した記事カードが表示され、そこから「続きを読む →」をクリックした際に自作したページにリンクが繋がっているか確認してください。</li>
     </ul>
@@ -913,7 +905,7 @@
 
     <ul>
         <li><strong><code>dummy-img</code> クラスの使用：</strong> 写真の用意ができるまでのプレースホルダーとして便利です。実際に本番の写真を組み込む際は、<code>&lt;div class="dummy-img"&gt;【写真のタイトル】&lt;/div&gt;</code> を <code>&lt;img src="images/shashin.jpg" alt="天体" style="width:100%; border-radius:8px;"&gt;</code> の形式に丸ごと差し替えてください。</li>
-        <li><strong>見出しタグ化の基準：</strong> 記事の可読性を上げるため、最大のブロックには <code>&lt;h2&gt;</code>、その中の細かいトピックスには <code>&lt;h3&gt;</code> を使うことで、CSSに規定されたスタイリッシュな左ライン装飾や破線が自動で当たります。</li>
+        <li><strong>見出しタグ化の基準：</strong> 記事の可読性を上げるため、最大のブロックには <code>&lt;h2&gt;</code>、その中の細かいトピックスには <code>&lt;h3&gt;</code> を使うことで、CSSに規定された左ライン装飾や破線が自動で当たります。</li>
         <li><strong>新しいサブページをサイドメニューに追加する手順：</strong><br>
         「編集」タブを開き、HTMLソースの一番最後（一番外側の閉じタグ <code>&lt;/div&gt;</code> の直前など）に、以下のように <code>data-menu-category</code>（大分類の見出し名）と <code>data-menu-title</code>（表示されるリンク名）を記述した <code>div</code> 構造を追加して保存します。<br>
         これだけで、左側のサイドメニュー（および新規ページ自体）が自動的に生成されて追加されます。
@@ -996,13 +988,13 @@
     let currentNoteTopic = "topic-blog"; // ノート（掲示板）の現在のアクティブトピック
 
     const WIKI_VERSION_KEY = "cbs_wiki_version";
-    const CURRENT_WIKI_VERSION = "2026_v12"; // バージョンを更新して追加したテンプレートを強制同期させます
+    const CURRENT_WIKI_VERSION = "2026_v12"; // テンプレート更新等のため強制同期
 
     if (sessionStorage.getItem("wiki_authenticated") === "true") {
         showWiki();
     }
 
-    // ログイン検証（非同期化とハッシュ比較）
+    // ログイン検証
     async function unlockWiki(event) {
         event.preventDefault();
         const passInput = document.getElementById("wiki-password").value;
@@ -1028,19 +1020,21 @@
             const res = await fetch('./data.json?t=' + Date.now());
             if (res.ok) {
                 const data = await res.json();
-                // 1. Wiki関連データを保存
+                // Wiki関連データを保存
                 if (data.wiki_content) localStorage.setItem('cbs_wiki_content', data.wiki_content);
                 if (data.wiki_notes) localStorage.setItem('cbs_wiki_notes', JSON.stringify(data.wiki_notes));
                 if (data.wiki_history) localStorage.setItem('cbs_wiki_history', JSON.stringify(data.wiki_history));
                 
-                // 🛠️ 【致命的なバグ対策】他のカテゴリのデータも同期して退避し、白紙化を防ぐ
+                // 他のカテゴリのデータも同期して退避し、白紙化を防ぐ
                 if (data.blog) localStorage.setItem('cbs_blog_posts', JSON.stringify(data.blog));
                 if (data.events) localStorage.setItem('cbs_events_posts', JSON.stringify(data.events));
                 if (data.monthly) localStorage.setItem('cbs_monthly_posts', JSON.stringify(data.monthly));
                 if (data.maunakea) localStorage.setItem('cbs_maunakea_posts', JSON.stringify(data.maunakea));
                 if (data.members) localStorage.setItem('cbs_members_posts', JSON.stringify(data.members));
                 
+                // 相互の初期化を防ぐため、ブログ側とWiki側の双方のバージョンキーを同時に更新
                 localStorage.setItem(WIKI_VERSION_KEY, CURRENT_WIKI_VERSION);
+                localStorage.setItem("cbs_site_version", "2026_v14");
             }
         } catch(e) {
             console.warn("Could not fetch data.json inside Wiki, using local storage cache.", e);
@@ -1073,7 +1067,7 @@
         let sha = null;
         let serverData = {};
 
-        // 1. 最新の data.json をフェッチ
+        // 最新の data.json をフェッチ
         try {
             const checkRes = await fetch(url, {
                 headers: {
@@ -1084,14 +1078,22 @@
             if (checkRes.status === 200) {
                 const checkData = await checkRes.json();
                 sha = checkData.sha;
-                const decodedStr = decodeURIComponent(escape(atob(checkData.content.replace(/\s/g, ""))));
+                
+                // TextDecoderを用いた安全なデコード（非推奨関数の代替）
+                const binaryString = atob(checkData.content.replace(/\s/g, ""));
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                const decodedStr = new TextDecoder("utf-8").decode(bytes);
                 serverData = JSON.parse(decodedStr);
             }
         } catch (e) {
             console.warn("Could not fetch remote data.json for merging inside Wiki. Using local values.", e);
         }
 
-        // 2. ローカルにデータが存在する場合のみ上書き。無いキーはサーバーのデータを維持
+        // ローカルにデータが存在する場合のみ上書き。無いキーはサーバーのデータを維持
         const localBlog = localStorage.getItem('cbs_blog_posts');
         const localEvents = localStorage.getItem('cbs_events_posts');
         const localMonthly = localStorage.getItem('cbs_monthly_posts');
@@ -1273,7 +1275,7 @@
         });
     }
 
-    // 履歴復元時に自動コミット同期を噛ませます
+    // 履歴復元
     async function restoreWikiRevision(revNo) {
         if (!confirm(`本当にリビジョン r${revNo} の状態へWikiを復元しますか？\n（※現在の最新版も履歴に保存されているため、いつでも再度ロールバックできます）`)) return;
 
@@ -1294,7 +1296,7 @@
         localStorage.setItem("cbs_wiki_content", targetRev.content);
         addWikiHistory(targetRev.content, `r${revNo} の状態へ復元（ロールバック）`);
 
-        // 同期
+        // クラウドへマージ同期
         await syncDataToGithub();
 
         alert(`リビジョン r${revNo} の状態へ復元が完了し、サーバーへ同期されました。`);
@@ -1334,7 +1336,7 @@
         renderNoteTopic();
     }
 
-    // 選択肢の順序を「匿名メンバー」が先頭に来るように設定する処理
+    // 選択肢の順序設定
     function populateParentCommentAuthors(membersList) {
         const select = document.getElementById("comment-author");
         if (!select) return;
@@ -1342,13 +1344,12 @@
         const currentVal = select.value;
         select.innerHTML = "";
 
-        // 匿名メンバーのオプションを最上部（デフォルト）に配置
+        // 匿名メンバーをデフォルト位置（先頭）に配置
         const anonOpt = document.createElement("option");
         anonOpt.value = "匿名メンバー";
         anonOpt.textContent = "匿名メンバー";
         select.appendChild(anonOpt);
 
-        // 次に個別メンバーのオプションを配置
         membersList.forEach(mem => {
             const opt = document.createElement("option");
             opt.value = mem.name;
@@ -1390,7 +1391,7 @@
 
         populateParentCommentAuthors(membersList);
 
-        // 返信フォーム側の選択肢も、匿名メンバーが先頭に来るようにHTML文字列を生成
+        // 返信フォーム側の選択肢
         let selectOptionsHTML = `<option value="匿名メンバー">匿名メンバー</option>`;
         membersList.forEach(mem => {
             selectOptionsHTML += `<option value="${escapeHtml(mem.name)}">${escapeHtml(mem.name)}</option>`;
@@ -1503,7 +1504,7 @@
         }
     }
 
-    // コメント投稿に自動同期を噛ませます
+    // コメント投稿
     async function postParentComment(event) {
         event.preventDefault();
         const author = document.getElementById("comment-author").value;
@@ -1544,7 +1545,7 @@
         renderNoteTopic();
     }
 
-    // コメント返信に自動同期を噛ませます
+    // コメント返信
     async function postReplyComment(commentId) {
         const author = document.getElementById(`reply-author-${commentId}`).value;
         const text = document.getElementById(`reply-text-${commentId}`).value.trim();
@@ -1664,7 +1665,7 @@
             activeLink.style.color = '#202122';
         }
 
-        // アップローダー固有の権限チェックを挟みます
+        // アップローダー固有の権限チェック
         if (pageId === 'wiki-page-uploader') {
             checkUploaderAuth();
         }
@@ -1687,7 +1688,7 @@
         }
     }
 
-    // 編集ロック解除（非同期ハッシュ検証）
+    // 編集ロック解除
     async function unlockEditor() {
         const pass = document.getElementById("edit-password").value;
         
@@ -1704,7 +1705,7 @@
         }
     }
 
-    // Wiki本文の編集保存時に自動同期を噛ませます
+    // Wiki本文の編集保存
     async function saveWikiContent() {
         const editedContent = document.getElementById("wiki-editor-raw").value;
         
@@ -1743,7 +1744,7 @@
         }
     }
 
-    // アップローダーロック解除（非同期ハッシュ検証）
+    // アップローダーロック解除
     async function unlockUploader() {
         const pass = document.getElementById("uploader-password").value;
         
@@ -1798,7 +1799,7 @@
             localStorage.removeItem("cbs_api_repo");
         }
 
-        // ファイルをBase64にエンコードしてPUTします
+        // ファイルをBase64にエンコードしてPUT
         const reader = new FileReader();
         reader.onload = async function(e) {
             const contentBase64 = e.target.result.split(',')[1];
@@ -1814,10 +1815,10 @@
                 });
                 if (checkRes.status === 200) {
                     const checkData = await checkRes.json();
-                    sha = checkData.sha; // 上書きのためにSHAを取得
+                    sha = checkData.sha; // 上書き用SHA取得
                 }
             } catch (err) {
-                // 新規作成
+                // 新規作成時
             }
 
             const bodyData = {
@@ -1840,7 +1841,14 @@
                 });
 
                 if (uploadRes.status === 200 || uploadRes.status === 201) {
-                    const pagesUrl = `https://${owner}.github.io/${repo}/${path}`;
+                    // カスタムドメイン形式（組織・ユーザーページ用）か否かで生成ロジックを分離
+                    let pagesUrl = "";
+                    if (repo.toLowerCase() === `${owner.toLowerCase()}.github.io`) {
+                        pagesUrl = `https://${owner}.github.io/${path}`;
+                    } else {
+                        pagesUrl = `https://${owner}.github.io/${repo}/${path}`;
+                    }
+                    
                     resultBox.style.background = "#e8f5e9";
                     resultBox.style.border = "1px solid #c8e6c9";
                     resultBox.style.color = "#2e7d32";
