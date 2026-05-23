@@ -86,7 +86,7 @@
             <h1 style="color: #0b132b; margin-bottom: 5px;">サイトコンテンツ総合管理</h1>
             <p style="margin-bottom: 30px; color: #666;">初期のデフォルトコンテンツを含む、全ページの編集・追加・削除が行えます。</p>
 
-            <!-- 🛠 GitHub 永続化同期パネル (初期値設定の際はフォームを編集する必要はありません) -->
+            <!-- 🛠 GitHub 永続化同期パネル -->
             <div style="background: #eef2f7; border: 1px solid #ccd6e0; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
                 <h3 style="color: #0b132b; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">⚙️ データベース永続化設定 (GitHub連携)</h3>
                 <p style="font-size: 0.8rem; color: #555; margin-bottom: 15px;">
@@ -326,20 +326,13 @@
     <script>
     // ==========================================
     // ⚙️ GitHub 連携デフォルト設定
-    // アカウント情報をここにハードコーディング（直書き）しておくことで、
-    // 編集メンバー全員の手動入力を不要にし、完全自動同期が可能になります。
     // ==========================================
-    // セキュリティ上のスキャン検知（自動無効化）を防止するため、文字列を簡易分割して定義します
-    const DEFAULT_API_TOKEN = ""; // 例: "ghp_xxxxxxxx" 
-    const DEFAULT_API_OWNER = "Connected-by-SUBARU"; // 例: "subaru-fan-club"
-    const DEFAULT_API_REPO  = "connected-by-subaru.github.io"; // 例: "connected-by-subaru"
+    const DEFAULT_API_TOKEN = ""; 
+    const DEFAULT_API_OWNER = "Connected-by-SUBARU"; 
+    const DEFAULT_API_REPO  = "connected-by-subaru.github.io"; 
     // ==========================================
 
     let currentCategory = 'blog';
-
-    window.addEventListener("beforeunload", function() {
-        sessionStorage.removeItem("admin_authenticated");
-    });
 
     const defaultBlogs = [
         { id: "default-blog-1", date: "2026年5月18日", title: "すばる望遠鏡体験企画に参加してわかった、“研究の現場”のリアル", summary: "「すばる望遠鏡」と聞くと、宇宙の美しい写真や最先端の天文学研究を思い浮かべる人が多いかもしれません。ですが、実際に現地へ...", content: "blog-article.html" },
@@ -375,7 +368,7 @@
     const VERSION_KEY = "cbs_site_version";
     const CURRENT_VERSION = "2026_v14";
 
-    // 1. data.jsonからのデータ読み込み（最優先処理。管理画面起動時にも自動フェッチさせてデータを引き継ぎます）
+    // 1. data.jsonからのデータ読み込み
     async function loadInitialData() {
         try {
             const res = await fetch('./data.json?t=' + Date.now());
@@ -387,12 +380,14 @@
                 if (data.maunakea) localStorage.setItem('cbs_maunakea_posts', JSON.stringify(data.maunakea));
                 if (data.members) localStorage.setItem('cbs_members_posts', JSON.stringify(data.members));
                 
-                // Wiki側の編集データ・掲示板データも巻き添えにしないために退避読み込みを掛けます
+                // Wiki側のデータも巻き添えにしないために退避読み込みを掛けます
                 if (data.wiki_content) localStorage.setItem('cbs_wiki_content', data.wiki_content);
                 if (data.wiki_notes) localStorage.setItem('cbs_wiki_notes', JSON.stringify(data.wiki_notes));
                 if (data.wiki_history) localStorage.setItem('cbs_wiki_history', JSON.stringify(data.wiki_history));
                 
+                // 相互の初期化を防ぐため、ブログ側とWiki側の双方のバージョンキーを同時に更新
                 localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+                localStorage.setItem("cbs_wiki_version", "2026_v12");
             }
         } catch (e) {
             console.warn("Could not fetch data.json, falling back to local storage cache.", e);
@@ -433,7 +428,7 @@
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    // ログイン検証（非同期処理 async に変更）
+    // ログイン検証
     async function unlockAdmin(event) {
         event.preventDefault();
         const passInput = document.getElementById("admin-password").value;
@@ -477,7 +472,6 @@
     }
 
     function loadApiSettings() {
-        // ローカルストレージに設定がない場合、コード上部のデフォルト設定を適用します
         const token = localStorage.getItem("cbs_api_token") || DEFAULT_API_TOKEN;
         const owner = localStorage.getItem("cbs_api_owner") || DEFAULT_API_OWNER;
         const repo = localStorage.getItem("cbs_api_repo") || DEFAULT_API_REPO;
@@ -486,7 +480,6 @@
         document.getElementById("api-owner").value = owner;
         document.getElementById("api-repo").value = repo;
 
-        // デフォルト設定が存在し、まだローカルに保存されていない場合は初期保存します
         if (token && token.indexOf("ここにご自身の") === -1) {
             localStorage.setItem("cbs_api_token", token);
             localStorage.setItem("cbs_api_owner", owner);
@@ -494,8 +487,7 @@
         }
     }
 
-    // data.jsonをGitHub APIで直接上書きアップデートする自動同期プログラム [5]
-    // data.jsonをGitHub APIで直接上書きアップデートする自動同期プログラム（セーフマージ版）
+    // data.jsonをGitHub APIで直接上書きアップデートする自動同期プログラム
     async function pushDataToGithub(quiet = true) {
         const token = localStorage.getItem("cbs_api_token") || DEFAULT_API_TOKEN;
         const owner = localStorage.getItem("cbs_api_owner") || DEFAULT_API_OWNER;
@@ -525,15 +517,22 @@
             if (checkRes.status === 200) {
                 const checkData = await checkRes.json();
                 sha = checkData.sha;
-                // Base64デコード（日本語対応の安全なデコード）
-                const decodedStr = decodeURIComponent(escape(atob(checkData.content.replace(/\s/g, ""))));
+                
+                // TextDecoderを用いた安全なデコード（非推奨関数の代替）
+                const binaryString = atob(checkData.content.replace(/\s/g, ""));
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                const decodedStr = new TextDecoder("utf-8").decode(bytes);
                 serverData = JSON.parse(decodedStr);
             }
         } catch (e) {
             console.warn("Could not fetch remote data.json for merging. Using local values.", e);
         }
 
-        // 2. ローカルにデータが存在する場合のみ上書き。無いキーはサーバーのデータを維持（白紙化防止）
+        // 2. ローカルにデータが存在する場合のみ上書き。無いキーはサーバーのデータを維持
         const localBlog = localStorage.getItem('cbs_blog_posts');
         const localEvents = localStorage.getItem('cbs_events_posts');
         const localMonthly = localStorage.getItem('cbs_monthly_posts');
@@ -709,7 +708,7 @@
         resetForms();
         loadManageTable();
 
-        // 💾 バックグラウンドで自動クラウド上書き同期を掛けます
+        // バックグラウンドで自動クラウド上書き同期を掛けます
         pushDataToGithub(true);
     }
 
@@ -808,7 +807,7 @@
         loadManageTable();
         resetForms();
 
-        // 💾 削除時もクラウド自動同期を掛けます
+        // 削除時もクラウド自動同期を掛けます
         pushDataToGithub(true);
     }
 
