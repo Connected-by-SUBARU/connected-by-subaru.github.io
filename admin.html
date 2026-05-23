@@ -425,12 +425,25 @@
         }
     }
 
-    function unlockAdmin(event) {
+    // ハッシュ化用ヘルパー関数（Web Crypto APIを使用）
+    async function sha256(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // ログイン検証（非同期処理 async に変更）
+    async function unlockAdmin(event) {
         event.preventDefault();
         const passInput = document.getElementById("admin-password").value;
-        const correctPassword = "maxihete"; 
+    
+        // 「maxihete」のSHA-256ハッシュ値
+        const correctPasswordHash = "237bf30db52e1bdf6961448b1fc9fb1ec28f41f71f697475fdfef10c7104b2b7"; 
+    
+        const inputHash = await sha256(passInput);
 
-        if (passInput === correctPassword) {
+        if (inputHash === correctPasswordHash) {
             sessionStorage.setItem("admin_authenticated", "true");
             showAdmin();
         } else {
@@ -482,6 +495,7 @@
     }
 
     // data.jsonをGitHub APIで直接上書きアップデートする自動同期プログラム [5]
+    // data.jsonをGitHub APIで直接上書きアップデートする自動同期プログラム（セーフマージ版）
     async function pushDataToGithub(quiet = true) {
         const token = localStorage.getItem("cbs_api_token") || DEFAULT_API_TOKEN;
         const owner = localStorage.getItem("cbs_api_owner") || DEFAULT_API_OWNER;
@@ -495,27 +509,11 @@
         const statusSpan = document.getElementById("sync-status");
         statusSpan.innerText = "🔄 クラウド同期中...";
 
-        // ★ Wiki側のデータを上書き消去してしまわないよう、ローカルに退避しているWiki情報もまとめてパッケージ化して送信します
-        const payload = {
-            blog: JSON.parse(localStorage.getItem('cbs_blog_posts')) || [],
-            events: JSON.parse(localStorage.getItem('cbs_events_posts')) || [],
-            monthly: JSON.parse(localStorage.getItem('cbs_monthly_posts')) || [],
-            maunakea: JSON.parse(localStorage.getItem('cbs_maunakea_posts')) || [],
-            members: JSON.parse(localStorage.getItem('cbs_members_posts')) || [],
-            wiki_content: localStorage.getItem('cbs_wiki_content') || "",
-            wiki_notes: JSON.parse(localStorage.getItem('cbs_wiki_notes') || '{}'),
-            wiki_history: JSON.parse(localStorage.getItem('cbs_wiki_history')) || []
-        };
-
-        // 安全なUTF-8対応のBase64エンコード処理
-        const jsonStr = JSON.stringify(payload, null, 2);
-        const uint8array = new TextEncoder().encode(jsonStr);
-        const binString = Array.from(uint8array, (byte) => String.fromCharCode(byte)).join("");
-        const contentBase64 = btoa(binString);
-
         const url = `https://api.github.com/repos/${owner}/${repo}/contents/data.json`;
         let sha = null;
+        let serverData = {};
 
+        // 1. まず現在のサーバー上の data.json をフェッチして退避する
         try {
             const checkRes = await fetch(url, {
                 method: "GET",
@@ -527,10 +525,40 @@
             if (checkRes.status === 200) {
                 const checkData = await checkRes.json();
                 sha = checkData.sha;
+                // Base64デコード（日本語対応の安全なデコード）
+                const decodedStr = decodeURIComponent(escape(atob(checkData.content.replace(/\s/g, ""))));
+                serverData = JSON.parse(decodedStr);
             }
         } catch (e) {
-            // 新規作成
+            console.warn("Could not fetch remote data.json for merging. Using local values.", e);
         }
+
+        // 2. ローカルにデータが存在する場合のみ上書き。無いキーはサーバーのデータを維持（白紙化防止）
+        const localBlog = localStorage.getItem('cbs_blog_posts');
+        const localEvents = localStorage.getItem('cbs_events_posts');
+        const localMonthly = localStorage.getItem('cbs_monthly_posts');
+        const localMaunakea = localStorage.getItem('cbs_maunakea_posts');
+        const localMembers = localStorage.getItem('cbs_members_posts');
+        const localWiki = localStorage.getItem('cbs_wiki_content');
+        const localNotes = localStorage.getItem('cbs_wiki_notes');
+        const localHistory = localStorage.getItem('cbs_wiki_history');
+
+        const payload = {
+            blog: localBlog !== null ? JSON.parse(localBlog) : (serverData.blog || []),
+            events: localEvents !== null ? JSON.parse(localEvents) : (serverData.events || []),
+            monthly: localMonthly !== null ? JSON.parse(localMonthly) : (serverData.monthly || []),
+            maunakea: localMaunakea !== null ? JSON.parse(localMaunakea) : (serverData.maunakea || []),
+            members: localMembers !== null ? JSON.parse(localMembers) : (serverData.members || []),
+            wiki_content: localWiki !== null ? localWiki : (serverData.wiki_content || ""),
+            wiki_notes: localNotes !== null ? JSON.parse(localNotes) : (serverData.wiki_notes || {}),
+            wiki_history: localHistory !== null ? JSON.parse(localHistory) : (serverData.wiki_history || [])
+        };
+
+        // 安全なUTF-8対応のBase64エンコード処理
+        const jsonStr = JSON.stringify(payload, null, 2);
+        const uint8array = new TextEncoder().encode(jsonStr);
+        const binString = Array.from(uint8array, (byte) => String.fromCharCode(byte)).join("");
+        const contentBase64 = btoa(binString);
 
         const bodyData = {
             message: "Update database (data.json) via CbS Admin Console",
