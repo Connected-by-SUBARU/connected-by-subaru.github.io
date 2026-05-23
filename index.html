@@ -70,12 +70,20 @@
     </section>
 
     <section id="join" class="section bg-dark">
-        <h2>お問い合わせ</h2>
-        <p>難しい数式は使わず、ビジュアルとやさしい言葉で魅力を伝える活動です！</p>
-        <form class="contact-form" style="margin-top: 20px;">
-            <input type="text" placeholder="お名前" required>
-            <input type="email" placeholder="メールアドレス" required>
-            <textarea placeholder="メッセージや質問などをご記入ください" rows="5" required></textarea>
+    <h2>お問い合わせ</h2>
+    <p>難しい数式は使わず、ビジュアルとやさしい言葉で魅力を伝える活動です！</p>
+    
+    <!-- 送信先メールアドレスをaction属性に設定し、methodをPOSTにします -->
+        <form class="contact-form" action="https://formsubmit.co/connected.by.subaru@gmail.com" method="POST" style="margin-top: 20px;">
+        
+            <!-- スパムボットによる自動送信を防ぐ隠しフィールド（ハニーポット） -->
+            <input type="text" name="_honey" style="display:none">
+        
+            <!-- 各入力欄には「name属性」が必須です -->
+            <input type="text" name="name" placeholder="お名前" required>
+            <input type="email" name="email" placeholder="メールアドレス" required>
+            <textarea name="message" placeholder="メッセージや質問などをご記入ください" rows="5" required></textarea>
+        
             <button type="submit" class="btn">送信する</button>
         </form>
     </section>
