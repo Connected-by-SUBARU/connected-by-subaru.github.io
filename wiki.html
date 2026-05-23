@@ -329,7 +329,7 @@
                                 <tr style="background: #f8f9fa; border-bottom: 2px solid #a2a9b1;">
                                     <th style="padding: 10px; text-align: center; width: 80px;">版 (Rev)</th>
                                     <th style="padding: 10px; text-align: left; width: 180px;">保存日時</th>
-                                    <th style="padding: 10px; text-align: left;">変更内容の要約 (コメント)</th>
+                                    <th style="padding: 10px; text-align: left;">変更内容の要要約 (コメント)</th>
                                     <th style="padding: 10px; text-align: right; width: 120px;">サイズ (文字数)</th>
                                     <th style="padding: 10px; text-align: center; width: 140px;">操作</th>
                                 </tr>
@@ -397,11 +397,99 @@
     <!-- Wiki動作ロジックスクリプト -->
     <script>
     // ハッシュ化用ヘルパー関数（Web Crypto APIを使用）
-    async function sha256(message) {
+    async function sha256_webcrypto(message) {
         const msgBuffer = new TextEncoder().encode(message);
         const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // ピュアJSによるSHA-256代替処理（WebCrypto非対応環境のフォールバック用）
+    function jsSha256(str) {
+        const rotateRight = (n, x) => (x >>> n) | (x << (32 - n));
+        const ch = (x, y, z) => (x & y) ^ (~x & z);
+        const maj = (x, y, z) => (x & y) ^ (x & z) ^ (y & z);
+        const sigma0 = (x) => rotateRight(2, x) ^ rotateRight(13, x) ^ rotateRight(22, x);
+        const sigma1 = (x) => rotateRight(6, x) ^ rotateRight(11, x) ^ rotateRight(25, x);
+        const gamma0 = (x) => rotateRight(7, x) ^ rotateRight(18, x) ^ (x >>> 3);
+        const gamma1 = (x) => rotateRight(17, x) ^ rotateRight(19, x) ^ (x >>> 10);
+
+        const K = [
+            0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+            0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+            0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+            0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+            0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+            0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+            0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+            0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+        ];
+
+        let H = [
+            0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
+        ];
+
+        const utf8 = unescape(encodeURIComponent(str));
+        const words = [];
+        for (let i = 0; i < utf8.length; i++) {
+            words[i >>> 2] |= utf8.charCodeAt(i) << (24 - (i % 4) * 8);
+        }
+
+        const bitLen = utf8.length * 8;
+        words[bitLen >>> 5] |= 0x80 << (24 - (bitLen % 32));
+        const blockLen = ((bitLen + 64 >>> 9) + 1) * 16;
+        while (words.length < blockLen) words.push(0);
+        words[blockLen - 2] = Math.floor(bitLen / 0x100000000);
+        words[blockLen - 1] = bitLen & 0xffffffff;
+
+        for (let i = 0; i < words.length; i += 16) {
+            const W = new Array(64);
+            for (let j = 0; j < 16; j++) W[j] = words[i + j];
+            for (let j = 16; j < 64; j++) {
+                W[j] = (gamma1(W[j - 2]) + W[j - 7] + gamma0(W[j - 15]) + W[j - 16]) | 0;
+            }
+
+            let [a, b, c, d, e, f, g, h] = H;
+
+            for (let j = 0; j < 64; j++) {
+                const T1 = (h + sigma1(e) + ch(e, f, g) + K[j] + W[j]) | 0;
+                const T2 = (sigma0(a) + maj(a, b, c)) | 0;
+                h = g;
+                g = f;
+                f = e;
+                e = (d + T1) | 0;
+                d = c;
+                c = b;
+                b = a;
+                a = (T1 + T2) | 0;
+            }
+
+            H[0] = (H[0] + a) | 0;
+            H[1] = (H[1] + b) | 0;
+            H[2] = (H[2] + c) | 0;
+            H[3] = (H[3] + d) | 0;
+            H[4] = (H[4] + e) | 0;
+            H[5] = (H[5] + f) | 0;
+            H[6] = (H[6] + g) | 0;
+            H[7] = (H[7] + h) | 0;
+        }
+
+        return H.map(x => {
+            const hex = (x >>> 0).toString(16);
+            return '0'.repeat(8 - hex.length) + hex;
+        }).join('');
+    }
+
+    // ハッシュ化用ヘルパー（環境自動判別）
+    async function sha256(message) {
+        if (typeof window !== "undefined" && window.crypto && window.crypto.subtle) {
+            try {
+                return await sha256_webcrypto(message);
+            } catch (e) {
+                console.warn("SubtleCrypto failed, falling back to pure JS hash.", e);
+            }
+        }
+        return jsSha256(message);
     }
 
     // XSS対策：HTMLタグのエスケープ処理
@@ -421,568 +509,6 @@
     const DEFAULT_API_OWNER = "Connected-by-SUBARU";                                    
     const DEFAULT_API_REPO  = "connected-by-subaru.github.io";                                   
     // ==========================================
-
-    // 規定の表示コンテンツ
-    const defaultWikiContent = `
-<div id="wiki-page-basic" class="wiki-subpage" data-menu-category="基本方針" data-menu-title="1 メインページ / 基本方針">
-    <h1 class="wiki-article-title">📢 CbS 活動理念と基本方針</h1>
-    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
-
-    <div class="wiki-toc">
-        <div class="wiki-toc-title">目次</div>
-        <ul>
-            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-basic')">1 📢 CbS 活動理念とポリシー</a></li>
-            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-monthlyguide')">2 🌌 今月のすばる追加手順の解説</a></li>
-            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-monthly-template')">3 🌌 今月のすばる用HTMLテンプレート</a></li>
-            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-eventguide')">4 🌟 イベント告知追加手順の解説</a></li>
-            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-event-template')">5 🌟 イベント告知用HTMLテンプレート</a></li>
-            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-maunakeaguide')">6 🌺 マウナケア便り追加手順の解説</a></li>
-            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-maunakea-template')">7 🌺 マウナケア便り用HTMLテンプレート</a></li>
-            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-blogguide')">8 💻 ブログ追加手順の解説</a></li>
-            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-template')">9 📸 公式HTMLテンプレート</a></li>
-            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-edit-points')">10 🛠 編集におけるポイント</a></li>
-            <li><a href="javascript:void(0)" onclick="showWikiSubpage('wiki-page-uploader')">11 🛠 HTML自動アップローダー（要パスワード）</a></li>
-        </ul>
-    </div>
-
-    <h2>📢 CbS 活動理念とポリシー</h2>
-    <p>私たちの目標は「すばる望遠鏡」および国立天文台の活動を、宇宙に詳しくない一般の人、中学生や高校生に対しても「易しい言葉、美しいビジュアル」で届けることです。</p>
-    <p><strong>活動の注意点：</strong><br>
-    ・当団体はボランティア（非公式有志団体）であり、公式見解と誤認されないよう十分注意してください。<br>
-    ・引用ルールを守り、最新のデータや撮影画像の権利元クレジット（© NAOJ 等）は必ず正しく掲載してください。</p>
-
-    <h2>📝 今後のプロジェクト＆企画書</h2>
-    <p><strong>1. 国立天文台への新しい「すばる望遠鏡公式グッズ」提案企画</strong><br>
-    ・天の川レーザー射出の様子を再現した蓄光ピンバッジの設計書（ミサキ・コウタ担当）<br>
-    ・中高生向け学習用パンフレット案の草稿</p>
-    <p><strong>2. 夏のオンライン星空観望会（7/11）の役割分担</strong><br>
-    ・配信・配信システム構築：コウタ<br>
-    ・星空解説の資料・トークスクリプト作成：アキト・ハルナ</p>
-
-    <h2>📁 広報用素材アセット共有</h2>
-    <p>公式のオープンソース素材やクレジット記載のフォーマットを掲載しています。<br>
-    ・すばる望遠鏡写真アーカイブリンク<br>
-    ・サークル公式ロゴマーク（AI / PNGデータはSlackをご確認ください）</p>
-</div>
-
-<div id="wiki-page-monthlyguide" class="wiki-subpage" style="display: none;" data-menu-category="今月のすばる追加ガイド" data-menu-title="2.1 今月のすばる追加手順">
-    <h1 class="wiki-article-title">🌌 「今月のすばる」追加手順と執筆ガイド</h1>
-    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
-
-    <p>「今月のすばる」は、すばる望遠鏡が公開した最新の観測画像や、公式X（旧Twitter）などで注目を集めた成果を、専門知識のない一般の方向けに「数式を使わず」「やさしい言葉」で噛み砕いて紹介するカード型のコンテンツです。</p>
-    
-    <h2>📋 追加・変更の手順フロー</h2>
-    <ul>
-        <li><strong>ステップ1：紹介する観測成果の選定</strong><br>
-        国立天文台（NAOJ）のプレスリリースや、すばる望遠鏡公式ウェブサイト、公式Xから、中高生や一般の方が興味を持ちそうなビジュアル（美しい銀河、星雲、惑星など）のリリースを選びます。</li>
-        <li><strong>ステップ2：やさしい解説文の作成</strong><br>
-        「130億光年」「ダークマター」といった言葉を使う際は、それがどのような意味なのか一言で補足するなど、噛み砕いた文章を作成します。数式や難解な学術記号は使わないのがCbSの広報ポリシーです。</li>
-        <li><strong>ステップ3：管理者コンソール（admin.html）からの登録</strong><br>
-        管理者ログイン後、「🌌 今月のすばる」タブを開き、以下の各項目を入力します：<br>
-        ・<strong>タイトル（観測成果の簡易説明）</strong>：観測成果をキャッチーに説明した文（例：宇宙に咲く巨大なひまわり銀河！）<br>
-        ・<strong>更新年月</strong>：いつの更新分か（例：2026年6月 更新）<br>
-        ・<strong>画像プレースホルダー表示名</strong>：掲載予定の画像をイメージできる短い表示名（例：ひまわり銀河の鮮明画像）<br>
-        ・<strong>分かりやすい解説（数式を使わない説明文）</strong>：作成した数式を使わない150〜250文字程度の解説文<br>
-        ・<strong>解説ページのURL / HTMLファイル名</strong>：詳細な解説や国立天文台の公式発表ページへ直接リンクさせたい場合は、そのURLまたは自作HTML名を入力します（空欄でも問題なく動作します）。</li>
-        <li><strong>ステップ4：登録と表示確認</strong><br>
-        「解説カードを発行する」ボタンをクリックします。保存完了後、<a href="monthly.html" target="_blank">monthly.html</a>（今月のすばる）に新しいカードが即時追加され、「解説を読む →」から指定したURLへ正しくリンクできているか確認してください。</li>
-    </ul>
-</div>
-
-<div id="wiki-page-monthly-template" class="wiki-subpage" style="display: none;" data-menu-category="今月のすばる追加ガイド" data-menu-title="2.2 公式HTMLテンプレート">
-    <h1 class="wiki-article-title">🌌 「今月のすばる」詳細解説用HTMLテンプレート</h1>
-    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
-
-    <p>「今月のすばる」カードから「解説を読む →」をクリックした際に遷移させるための詳細解説ページ用テンプレートです。画像解説に特化した無駄のない2段組み構造です。</p>
-
-    <pre>&lt;!DOCTYPE html&gt;
-&lt;html lang="ja"&gt;
-&lt;head&gt;
-    &lt;meta charset="UTF-8"&gt;
-    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
-    &lt;link rel="stylesheet" href="css/style.css"&gt;
-    &lt;title&gt;【観測テーマ名】 | 今月のすばる | CbS&lt;/title&gt;
-&lt;/head&gt;
-&lt;body class="bg-light"&gt;
-    &lt;header&gt;
-        &lt;div class="logo"&gt;&lt;a href="index.html"&gt;Connected by SUBARU(CbS)&lt;/a&gt;&lt;/div&gt;
-        &lt;nav&gt;
-            &lt;ul class="nav-menu"&gt;
-                &lt;li&gt;&lt;a href="index.html"&gt;Home&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="blog.html"&gt;Blog&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="monthly.html"&gt;今月のすばる&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="events.html"&gt;イベント告知&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="maunakea.html"&gt;マウナケア便り&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="members.html"&gt;メンバー紹介&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="media.html"&gt;メディア・ライブ&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="wiki.html" style="color: #fca311; font-weight: bold;"&gt;Wiki(限定)&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="index.html#join"&gt;お問い合わせ&lt;/a&gt;&lt;/li&gt;
-            &lt;/ul&gt;
-        &lt;/nav&gt;
-    &lt;/header&gt;
-
-    &lt;main class="blog-container"&gt;
-        &lt;article class="blog-article"&gt;
-            &lt;header class="article-header"&gt;
-                &lt;span class="article-date"&gt;【更新年月 例: 2026年6月 更新】&lt;/span&gt;
-                &lt;h1&gt;【ここに観測テーマのタイトルを記入 例: 宇宙に咲く巨大なひまわり銀河】&lt;/h1&gt;
-            &lt;/header&gt;
-
-            &lt;div class="article-body"&gt;
-                &lt;p&gt;ここに導入部分の短い文章（Xなどの反響、何を捉えた画像かなど）を記入します。&lt;/p>
-
-                &lt;h2&gt;🌌 捉えられた最新の宇宙画像&lt;/h2&gt;
-                &lt;figure&gt;
-                    &lt;div class="dummy-img"&gt;【観測画像のプレースホルダー】&lt;/div&gt;
-                    &lt;figcaption&gt;画像クレジット：国立天文台(NAOJ) / すばる望遠鏡&lt;/figcaption&gt;
-                &lt;/figure>
-
-                &lt;h2&gt;💡 やさしくわかる3つの解説ポイント&lt;/h2&gt;
-                &lt;p&gt;数式を使わずに、中高生でも頭の中でビジュアルが浮かび上がるように記述しましょう。&lt;/p>
-                &lt;ul&gt;
-                    &lt;li&gt;&lt;strong&gt;ポイント1（何がすごいのか）：&lt;/strong&gt; 新しく判明した構造や発見の意義を解説します。&lt;/li&gt;
-                    &lt;li&gt;&lt;strong&gt;ポイント2（地球からの距離）：&lt;/strong&gt; 遠さを日常や歴史的なタイムスケールに例えてみます。&lt;/li&gt;
-                &lt;/ul&gt;
-            &lt;/div&gt;
-            
-            &lt;div style="text-align: center; margin-top: 50px;"&gt;
-                &lt;a href="monthly.html" class="btn"&gt;← 今月のすばる一覧へ戻る&lt;/a&gt;
-            &lt;/div&gt;
-        &lt;/article&gt;
-    &lt;/main&gt;
-
-    &lt;footer&gt;
-        &lt;div class="footer-sns"&gt;
-            &lt;a href="https://x.com" target="_blank"&gt;X (旧Twitter)&lt;/a&gt;
-            &lt;a href="https://instagram.com" target="_blank"&gt;Instagram&lt;/a&gt;
-            &lt;a href="media.html"&gt;YouTube / ライブ中継&lt;/a&gt;
-            &lt;a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;"&gt;(管理者ログイン)&lt;/a&gt;
-        </div>
-        &lt;p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.&lt;/p>
-    &lt;/footer&gt;
-&lt;/body&gt;
-&lt;/html&gt;</pre>
-</div>
-
-<div id="wiki-page-eventguide" class="wiki-subpage" style="display: none;" data-menu-category="イベント告知ガイド" data-menu-title="3.1 イベント告知追加手順">
-    <h1 class="wiki-article-title">🌟 「イベント告知」追加手順とステータス管理ガイド</h1>
-    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
-
-    <p>当サークルが企画するオンライン観望会、勉強会、また応援している宇宙・天文関連イベントの告知カードを管理・掲載するための手順です。</p>
-    
-    <h2>📋 追加・変更の手順フロー</h2>
-    <ul>
-        <li><strong>ステップ1：イベント詳細情報の取りまとめ</strong><br>
-        告知するイベントのタイトル、日時、会場または配信プラットフォーム（Zoom、YouTube Live等）、申し込み窓口のリンク（GoogleフォームやPeatix等）を準備します。</li>
-        <li><strong>ステップ2：管理者コンソール（admin.html）からの登録</strong><br>
-        管理者ログイン後、「🌟 イベント告知」タブを開き、以下の項目を入力します：<br>
-        ・<strong>イベントタイトル</strong>：分かりやすく魅力的なタイトル（例：夏の満天星空オンライン観望会！）<br>
-        ・<strong>開催日時</strong>：曜日や時間まで明確に（例：2026年7月11日（土）20:00 〜 21:30）<br>
-        ・<strong>開催場所 / 配信方法</strong>：参加者に分かりやすく（例：オンライン配信（Zoom / YouTube））<br>
-        ・<strong>受付状況</strong>：「参加受付中」「終了しました」「準備中」から現在のステータスを選択します。これによりデザインが自動で変化します。<br>
-        ・<strong>イベント詳細説明</strong>：見どころやタイムスケジュール、対象者、参加費用などを4〜5行程度で記述します。<br>
-        ・<strong>詳細ページのURL / HTMLファイル名</strong>：申し込み用フォーム（Googleフォーム等）や、より詳しい詳細特設ページのURLを入力します。</li>
-        <li><strong>ステップ3：登録と表示確認</strong><br>
-        「イベント告知を発行する」をクリックします。<a href="events.html" target="_blank">events.html</a>（イベント告知）を開き、正しく新イベントが追加されているか、また受付ステータスのバッジの色（「参加受付中」はオレンジの枠線と赤いバッジ、「終了しました」はグレーの枠線とバッジ）が正しく表示されているか確認します。</li>
-    </ul>
-</div>
-
-<div id="wiki-page-event-template" class="wiki-subpage" style="display: none;" data-menu-category="イベント告知ガイド" data-menu-title="3.2 公式HTMLテンプレート">
-    <h1 class="wiki-article-title">🌟 「イベント告知」詳細解説用HTMLテンプレート</h1>
-    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
-
-    <p>「イベント告知」カードから遷移させるための詳細解説・お申し込み特設ページ用テンプレートです。タイムテーブルや持ち物・諸注意などを一覧表示できるテーブル構造が含まれています。</p>
-
-    <pre>&lt;!DOCTYPE html&gt;
-&lt;html lang="ja"&gt;
-&lt;head&gt;
-    &lt;meta charset="UTF-8"&gt;
-    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
-    &lt;link rel="stylesheet" href="css/style.css"&gt;
-    &lt;title&gt;【イベント名】 | イベント告知 | CbS&lt;/title&gt;
-&lt;/head&gt;
-&lt;body class="bg-light"&gt;
-    &lt;header&gt;
-        &lt;div class="logo"&gt;&lt;a href="index.html"&gt;Connected by SUBARU(CbS)&lt;/a&gt;&lt;/div&gt;
-        &lt;nav&gt;
-            &lt;ul class="nav-menu"&gt;
-                &lt;li&gt;&lt;a href="index.html"&gt;Home&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="blog.html"&gt;Blog&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="monthly.html"&gt;今月のすばる&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="events.html"&gt;イベント告知&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="maunakea.html"&gt;マウナケア便り&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="members.html"&gt;メンバー紹介&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="media.html"&gt;メディア・ライブ&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="wiki.html" style="color: #fca311; font-weight: bold;"&gt;Wiki(限定)&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="index.html#join"&gt;お問い合わせ&lt;/a&gt;&lt;/li&gt;
-            &lt;/ul&gt;
-        &lt;/nav&gt;
-    &lt;/header&gt;
-
-    &lt;main class="blog-container"&gt;
-        &lt;article class="blog-article"&gt;
-            &lt;header class="article-header"&gt;
-                &lt;span class="article-date"&gt;【イベント開催日 例: 2026年7月11日（土）】&lt;/span&gt;
-                &lt;h1&gt;【イベントタイトル 例: 夏のオンライン星空観望会】&lt;/h1&gt;
-            &lt;/header&gt;
-
-            &lt;div class="article-body"&gt;
-                &lt;p&gt;ここにイベントの簡単な説明（企画の主旨や、中高生・一般など参加対象者へのメッセージ）を記入します。&lt;/p>
-
-                &lt;h2&gt;📅 開催概要&lt;/h2&gt;
-                &lt;div class="table-wrapper"&gt;
-                    &lt;table class="cost-table"&gt;
-                        &lt;tr&gt;
-                            &lt;th&gt;項目&lt;/th&gt;
-                            &lt;th&gt;内容&lt;/th&gt;
-                        &lt;/tr&gt;
-                        &lt;tr&gt;
-                            &lt;td&gt;日時&lt;/td&gt;
-                            &lt;td&gt;2026年7月11日（土）20:00 〜 21:30&lt;/td&gt;
-                        &lt;/tr&gt;
-                        &lt;tr&gt;
-                            &lt;td&gt;参加費用&lt;/td&gt;
-                            &lt;td&gt;無料（事前登録制）&lt;/td&gt;
-                        &lt;/tr&gt;
-                        &lt;tr&gt;
-                            &lt;td&gt;配信方法&lt;/td&gt;
-                            &lt;td&gt;オンライン（Zoom webinar / YouTube Live）&lt;/td&gt;
-                        &lt;/tr&gt;
-                    &lt;/table&gt;
-                &lt;/div&gt;
-
-                &lt;h2&gt;🔭 当日のタイムスケジュール&lt;/h2&gt;
-                &lt;ul&gt;
-                    &lt;li&gt;&lt;strong&gt;20:00 - 20:15：&lt;/strong&gt; オープニング（サークル紹介）&lt;/li&gt;
-                    &lt;li&gt;&lt;strong&gt;20:15 - 21:00：&lt;/strong&gt; マウナケア山頂カメラ中継＆メンバー解説&lt;/li&gt;
-                    &lt;li&gt;&lt;strong&gt;21:00 - 21:20：&lt;/strong&gt; 質問コーナー（Q&A機能を使用）&lt;/li&gt;
-                    &lt;li&gt;&lt;strong&gt;21:20 - 21:30：&lt;/strong&gt; アンケート・おしらせ、クロージング&lt;/li&gt;
-                &lt;/ul&gt;
-            &lt;/div&gt;
-            
-            &lt;div style="text-align: center; margin-top: 50px;"&gt;
-                &lt;a href="events.html" class="btn"&gt;← イベント一覧へ戻る&lt;/a&gt;
-            &lt;/div&gt;
-        &lt;/article&gt;
-    &lt;/main&gt;
-
-    &lt;footer&gt;
-        &lt;div class="footer-sns"&gt;
-            &lt;a href="https://x.com" target="_blank"&gt;X (旧Twitter)&lt;/a&gt;
-            &lt;a href="https://instagram.com" target="_blank"&gt;Instagram&lt;/a&gt;
-            &lt;a href="media.html"&gt;YouTube / ライブ中継&lt;/a&gt;
-            &lt;a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;"&gt;(管理者ログイン)&lt;/a&gt;
-        </div>
-        &lt;p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.&lt;/p>
-    &lt;/footer&gt;
-&lt;/body&gt;
-&lt;/html&gt;</pre>
-</div>
-
-<div id="wiki-page-maunakeaguide" class="wiki-subpage" style="display: none;" data-menu-category="マウナケア便りガイド" data-menu-title="4.1 マウナケア便り追加手順">
-    <h1 class="wiki-article-title">🌺 「マウナケア便り」追加手順とコラム執筆ガイド</h1>
-    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
-
-    <p>「マウナケア便り」は、すばる望遠鏡があるハワイ・マウナケア山頂のユニークな環境やハワイの伝統文化、天体観測の舞台裏などを親しみやすいエッセイ形式で紹介するコラムコーナーです。</p>
-    
-    <h2>📋 追加・変更の手順フロー</h2>
-    <ul>
-        <li><strong>ステップ1：コラムのネタ決めと執筆</strong><br>
-        「標高4,200mの高山病対策」「ハワイの伝統ナビゲーションと星」「主鏡はどうやって掃除する？」など、読者の知的好奇心をくすぐるテーマを設定して原稿を作成します。</li>
-        <li><strong>ステップ2：管理者コンソール（admin.html）からの登録</strong><br>
-        管理者ログイン後、「🌺 マウナケア便り」タブを開き、以下の項目を入力します：<br>
-        ・<strong>Vol</strong>：コラムの通し番号（例：Vol. 4）<br>
-        ・<strong>記事のタイトル</strong>：中身が気になるような見出し（例：山頂の寒さはどれくらい？研究者の防寒の工夫）<br>
-        ・<strong>画像プレースホルダー表示名</strong>：左側に表示されるアイキャッチ用の画像イメージ（例：雪の積もるドーム）<br>
-        ・<strong>本文の要約・抜粋</strong>：一覧画面に表示されるコラムのあらすじや導入文（3行程度）<br>
-        ・<strong>詳細ページのURL / HTMLファイル名</strong>：コラムの本文が書かれた詳細HTMLファイル（例：<code>maunakea-vol4.html</code>など）をアップロードし、そのファイル名またはURLを指定します。</li>
-        <li><strong>ステップ3：登録と表示確認</strong><br>
-        「コラム記事を発行する」をクリックします。<a href="maunakea.html" target="_blank">maunakea.html</a>（マウナケア便り）を開き、新コラムのカードが追加され、「記事を読む →」から執筆した本文ページへ正しく遷移するか確認してください。</li>
-    </ul>
-</div>
-
-<div id="wiki-page-maunakea-template" class="wiki-subpage" style="display: none;" data-menu-category="マウナケア便りガイド" data-menu-title="4.2 公式HTMLテンプレート">
-    <h1 class="wiki-article-title">🌺 「マウナケア便り」詳細コラム用HTMLテンプレート</h1>
-    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
-
-    <p>「マウナケア便り」カードから「記事を読む →」をクリックした際に遷移させるための、コラム・読み物ページ用テンプレートです。エッセイを読みやすく区切るセクション見出しや写真用のタグが配置されています。</p>
-
-    <pre>&lt;!DOCTYPE html&gt;
-&lt;html lang="ja"&gt;
-&lt;head&gt;
-    &lt;meta charset="UTF-8"&gt;
-    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
-    &lt;link rel="stylesheet" href="css/style.css"&gt;
-    &lt;title&gt;【コラムタイトル】 | マウナケア便り | CbS&lt;/title&gt;
-&lt;/head&gt;
-&lt;body class="bg-light"&gt;
-    &lt;header&gt;
-        &lt;div class="logo"&gt;&lt;a href="index.html"&gt;Connected by SUBARU(CbS)&lt;/a&gt;&lt;/div&gt;
-        &lt;nav&gt;
-            &lt;ul class="nav-menu"&gt;
-                &lt;li&gt;&lt;a href="index.html"&gt;Home&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="blog.html"&gt;Blog&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="monthly.html"&gt;今月のすばる&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="events.html"&gt;イベント告知&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="maunakea.html"&gt;マウナケア便り&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="members.html"&gt;メンバー紹介&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="media.html"&gt;メディア・ライブ&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="wiki.html" style="color: #fca311; font-weight: bold;"&gt;Wiki(限定)&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="index.html#join"&gt;お問い合わせ&lt;/a&gt;&lt;/li&gt;
-            &lt;/ul&gt;
-        &lt;/nav&gt;
-    &lt;/header&gt;
-
-    &lt;main class="blog-container"&gt;
-        &lt;article class="blog-article"&gt;
-            &lt;header class="article-header"&gt;
-                &lt;span class="article-date"&gt;【コラム巻数 例: Vol. 4】&lt;/span&gt;
-                &lt;h1&gt;【ここにエッセイのタイトルを記入 例: 標高4,200メートルの山頂は過酷？】&lt;/h1&gt;
-            &lt;/header&gt;
-
-            &lt;div class="article-body"&gt;
-                &lt;p&gt;ここにコラムを読み進めたくなるような、短くキャッチーな導入（ハワイの空気や山頂の景色への疑問など）を記入します。&lt;/p>
-
-                &lt;h2&gt;🏔 山頂の研究者が受ける「高地順応」とは？&lt;/h2&gt;
-                &lt;p&gt;ここにコラムの1つ目の解説段落を記述します。写真素材がある場合は下の figure タグの中に格納して挿入します。&lt;/p>
-                
-                &lt;figure&gt;
-                    &lt;div class="dummy-img"&gt;【ここに風景写真などを配置】&lt;/div&gt;
-                    &lt;figcaption&gt;写真：雲海が広がる夕暮れ時のマウナケア山頂ドーム（©国立天文台）&lt;/figcaption&gt;
-                &lt;/figure&gt;
-
-                &lt;h2&gt;🌺 ハワイの歴史と星たちの結びつき&lt;/h2&gt;
-                &lt;p&gt;ここに2つ目のトピックやエッセイとしてのまとめ段落を記述し、サークルメンバー独自の視点や感想を付け加えます。&lt;/p>
-            &lt;/div&gt;
-            
-            &lt;div style="text-align: center; margin-top: 50px;"&gt;
-                &lt;a href="maunakea.html" class="btn"&gt;← マウナケア便り一覧へ戻る&lt;/a&gt;
-            &lt;/div&gt;
-        &lt;/article&gt;
-    &lt;/main&gt;
-
-    &lt;footer&gt;
-        &lt;div class="footer-sns"&gt;
-            &lt;a href="https://x.com" target="_blank"&gt;X (旧Twitter)&lt;/a&gt;
-            &lt;a href="https://instagram.com" target="_blank"&gt;Instagram&lt;/a&gt;
-            &lt;a href="media.html"&gt;YouTube / ライブ中継&lt;/a&gt;
-            &lt;a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;"&gt;(管理者ログイン)&lt;/a&gt;
-        </div>
-        &lt;p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.&lt;/p>
-    &lt;/footer&gt;
-&lt;/body&gt;
-&lt;/html&gt;</pre>
-</div>
-
-<div id="wiki-page-blogguide" class="wiki-subpage" style="display: none;" data-menu-category="ブログ追加ガイド" data-menu-title="5.1 ブログ追加手順の解説">
-    <h1 class="wiki-article-title">💻 新規ブログを自作HTMLで追加するための手順解説</h1>
-    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
-
-    <p>サークル「Connected by SUBARU (CbS)」のWebサイトでは、体験記や活動報告などをメンバー各自がオリジナルのHTMLファイル（自作ページ）として作成し、それらを公式サイトのブログ一覧に簡単に登録・追加することができます。</p>
-    <p>ブログの自作から登録完了までの基本的な作業フローは、以下の5つの手順に沿って行います：</p>
-    <ul>
-        <li><strong>ステップ1：本ページ内のHTMLテンプレートをコピーする</strong><br>
-        左メニューまたは目次から「公式HTMLテンプレート」を開き、コードをすべてコピーします。お使いのテキストエディタに貼り付け、好みのファイル名（例：<code>blog-shinchaku.html</code>）を付けてローカルPC環境に保存します。</li>
-        <li><strong>ステップ2：記事のテキストや見出しを自由に書き換える</strong><br>
-        テンプレート内の指定箇所（タイトル・日付・本文・写真の説明文など）をご自身の作成するコラム内容に書き換えます。見出しや段落は最初から見やすくデザインされているため、中身を差し替えるだけで自動的に整います。</li>
-        <li><strong>ステップ3：作成したファイルをWebサーバーへアップロードする</strong><br>
-        編集が完了したファイルを、サークルのWebサーバー上（<code>index.html</code>や<code>blog.html</code>と同じ同一階層、またはアップロード用の指定フォルダ）へ配置・アップロードします。</li>
-        <li><strong>ステップ4：コンテンツ管理システム（admin.html）から紐付けを行う</strong><br>
-        管理者用ログイン画面（<a href="admin.html" target="_blank">admin.html</a>）へ進み、管理パスワードを入力してログインします。上部タブの「📝 ブログ」を選択した状態で、以下の各入力項目を埋めます：<br>
-        ・<strong>記事タイトル</strong>：一覧に並ぶブログカードのタイトル（例：ハワイの夜空を見上げて）<br>
-        ・<strong>投稿日付</strong>：作成・公開時の日付（例：2026年5月22日）<br>
-        ・<strong>概要/紹介文</strong>：一覧画面で記事の簡単な予告となる1〜2行程度の紹介用テキスト<br>
-        ・<strong>詳細ページのURL / HTMLファイル名</strong>：ステップ3でサーバーにアップした自作のファイル名（例：<code>blog-shinchaku.html</code>、または外部に配置したURL）を入力します。</li>
-        <li><strong>ステップ5：登録内容を保存して確認する</strong><br>
-        「ブログを発行・更新する」ボタンを押すと保存が完了します。実際にブログ一覧ページ（<a href="blog.html" target="_blank">blog.html</a>）をブラウザで表示し、追加した記事カードが表示され、そこから「続きを読む →」をクリックした際に自作したページにリンクが繋がっているか確認してください。</li>
-    </ul>
-</div>
-
-<div id="wiki-page-template" class="wiki-subpage" style="display: none;" data-menu-category="ブログ追加ガイド" data-menu-title="5.2 公式HTMLテンプレート">
-    <h1 class="wiki-article-title">📸 コピペしてすぐに使える写真付き公式HTMLテンプレート</h1>
-    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
-
-    <p>以下のソースコードは、CbS共通のスタイルシート（<code>css/style.css</code>）が最初から読み込まれており、統一感のあるすっきりとした段組みやフォントスタイルで表示されるよう設計された完全なHTMLテンプレートです。余分な記述は自由に削除したりカスタマイズしてご使用ください。</p>
-
-    <pre>&lt;!DOCTYPE html&gt;
-&lt;html lang="ja"&gt;
-&lt;head&gt;
-    &lt;meta charset="UTF-8"&gt;
-    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
-    &lt;link rel="stylesheet" href="css/style.css"&gt;
-    &lt;title&gt;【ここに記事のタイトルを記入】 | CbS&lt;/title&gt;
-&lt;/head&gt;
-&lt;body class="bg-light"&gt;
-    &lt;header&gt;
-        &lt;div class="logo"&gt;&lt;a href="index.html"&gt;Connected by SUBARU(CbS)&lt;/a&gt;&lt;/div&gt;
-        &lt;nav&gt;
-            &lt;ul class="nav-menu"&gt;
-                &lt;li&gt;&lt;a href="index.html"&gt;Home&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="blog.html"&gt;Blog&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="monthly.html"&gt;今月のすばる&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="events.html"&gt;イベント告知&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="maunakea.html"&gt;マウナケア便り&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="members.html"&gt;メンバー紹介&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="media.html"&gt;メディア・ライブ&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="wiki.html" style="color: #fca311; font-weight: bold;"&gt;Wiki(限定)&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="index.html#join"&gt;お問い合わせ&lt;/a&gt;&lt;/li&gt;
-            &lt;/ul&gt;
-        &lt;/nav&gt;
-    &lt;/header&gt;
-
-    &lt;main class="blog-container"&gt;
-        &lt;article class="blog-article"&gt;
-            &lt;header class="article-header"&gt;
-                &lt;span class="article-date"&gt;【ここに投稿日付を記入 例: 2026年5月22日】&lt;/span&gt;
-                &lt;h1&gt;【ここに記事のメインタイトルを記入】&lt;/h1&gt;
-            &lt;/header&gt;
-
-            &lt;div class="article-body"&gt;
-                &lt;p&gt;ここに導入部分の文章を記入します。記事全体がどのような内容について書かれているか要約や見どころを紹介してください。&lt;/p>
-
-                &lt;h2&gt;大見出し（h2）の解説項目&lt;/h2&gt;
-                &lt;p&gt;本文を記入します。専門的な言葉をなるべく使わずに、ビジュアルが想起しやすい表現で作成することがサークル広報の方針です。&lt;/p>
-
-                &lt;!-- 写真付きレイアウト --&gt;
-                &lt;figure&gt;
-                    &lt;div class="dummy-img"&gt;【ここに仮写真の説明・画像を配置 例: 満天の星空】&lt;/div&gt;
-                    &lt;figcaption&gt;写真1：ハワイ・マウナケア山頂ドーム付近から捉えた満天の星空と天の川&lt;/figcaption&gt;
-                &lt;/figure>
-
-                &lt;h3&gt;小見出し・補足項目（h3）の解説&lt;/h3&gt;
-                &lt;p&gt;より細かなチェックポイントやポイントを記載したい場合は、以下の箇条書き（ul/li）の構造を使用すると便利です。&lt;/p>
-                &lt;ul&gt;
-                    &lt;li&gt;&lt;strong&gt;重要なトピック：&lt;/strong&gt; 具体的な説明テキストをここに配置します。&lt;/li&gt;
-                    &lt;li&gt;&lt;strong&gt;重要なトピックその2：&lt;/strong&gt; 同様に説明テキストを追記します。&lt;/li>
-                &lt;/ul>
-
-                &lt;!-- テーブルレイアウト --&gt;
-                &lt;h2&gt;費用一覧やタイムスケジュールなど（必要に応じて使用）&lt;/h2&gt;
-                &lt;div class="table-wrapper"&gt;
-                    &lt;table class="cost-table"&gt;
-                        &lt;tr&gt;
-                            &lt;th&gt;項目名&lt;/th&gt;
-                            &lt;th&gt;内容詳細&lt;/th&gt;
-                        &lt;/tr&gt;
-                        &lt;tr&gt;
-                            &lt;td&gt;航空運賃などの補助&lt;/td&gt;
-                            &lt;td&gt;一部航空券の支援制度あり&lt;/td&gt;
-                        &lt;/tr&gt;
-                        &lt;tr&gt;
-                            &lt;td&gt;必須準備物&lt;/td&gt;
-                            &lt;td&gt;パスポート、防寒用の厚手の衣服、高山病対策グッズ&lt;/td&gt;
-                        &lt;/tr&gt;
-                    &lt;/table&gt;
-                &lt;/div&gt;
-
-                &lt;h2&gt;まとめ・今後の展望&lt;/h2>
-                &lt;p&gt;記事のまとめ部分をここに記載します。サークルとしてのこれからの活動に向けた決意や、応援メッセージへの感謝などを書き添えてクローズします。&lt;/p>
-            &lt;/div&gt;
-            
-            &lt;div style="text-align: center; margin-top: 50px;"&gt;
-                &lt;a href="blog.html" class="btn"&gt;← Blog一覧へ戻る&lt;/a&gt;
-            &lt;/div&gt;
-        &lt;/article&gt;
-    &lt;/main&gt;
-
-    &lt;footer&gt;
-        &lt;div class="footer-sns"&gt;
-            &lt;a href="https://x.com" target="_blank"&gt;X (旧Twitter)&lt;/a&gt;
-            &lt;a href="https://instagram.com" target="_blank"&gt;Instagram&lt;/a&gt;
-            &lt;a href="media.html"&gt;YouTube / ライブ中継&lt;/a&gt;
-            &lt;a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;"&gt;(管理者ログイン)&lt;/a&gt;
-        </div>
-        <p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.</p>
-        <p><small>※当サークルは国立天文台を応援する有志のボランティアサークルです。</small></p>
-    </footer>
-</body>
-</html></pre>
-</div>
-
-<div id="wiki-page-edit-points" class="wiki-subpage" style="display: none;" data-menu-category="ブログ追加ガイド" data-menu-title="5.3 編集のポイント">
-    <h1 class="wiki-article-title">🛠 編集におけるポイント</h1>
-    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) メンバーズ</div>
-
-    <ul>
-        <li><strong><code>dummy-img</code> クラスの使用：</strong> 写真の用意ができるまでのプレースホルダーとして便利です。実際に本番の写真を組み込む際は、<code>&lt;div class="dummy-img"&gt;【写真のタイトル】&lt;/div&gt;</code> を <code>&lt;img src="images/shashin.jpg" alt="天体" style="width:100%; border-radius:8px;"&gt;</code> の形式に丸ごと差し替えてください。</li>
-        <li><strong>見出しタグ化の基準：</strong> 記事の可読性を上げるため、最大のブロックには <code>&lt;h2&gt;</code>、その中の細かいトピックスには <code>&lt;h3&gt;</code> を使うことで、CSSに規定された左ライン装飾や破線が自動で当たります。</li>
-        <li><strong>新しいサブページをサイドメニューに追加する手順：</strong><br>
-        「編集」タブを開き、HTMLソースの一番最後（一番外側の閉じタグ <code>&lt;/div&gt;</code> の直前など）に、以下のように <code>data-menu-category</code>（大分類の見出し名）と <code>data-menu-title</code>（表示されるリンク名）を記述した <code>div</code> 構造を追加して保存します。<br>
-        これだけで、左側のサイドメニュー（および新規ページ自体）が自動的に生成されて追加されます。
-        <pre>&lt;div id="wiki-page-newsection" class="wiki-subpage" style="display: none;" data-menu-category="応用コラム" data-menu-title="新しい新ページ"&gt;
-    &lt;h1 class="wiki-article-title"&gt;新規作成したコンテンツのタイトル&lt;/h1&gt;
-    &lt;p&gt;ここに本文を書き込みます...&lt;/p&gt;
-&lt;/div&gt;</pre>
-        </li>
-    </ul>
-</div>
-
-<div id="wiki-page-uploader" class="wiki-subpage" style="display: none;" data-menu-category="管理者ツール" data-menu-title="🛠 HTML自動アップローダー">
-    <h1 class="wiki-article-title">🛠 HTML自動アップローダー（GitHub連携）</h1>
-    <div class="wiki-article-subtitle">提供：Connected by SUBARU(CbS) システム管理</div>
-
-    <p>作成したHTMLファイル（コラム詳細ページやイベント特設ページなど）を、管理者に代わってサークルのGitHubリポジトリへ直接コミット（追加・更新）するためのツールです。</p>
-
-    <!-- 認証ロック（未認証の時のみ表示） -->
-    <div id="uploader-lock-box" class="wiki-lock-box" style="margin: 20px auto;">
-        <div style="font-size: 2rem; margin-bottom: 10px;">🔒</div>
-        <h3 style="margin-bottom: 10px; font-weight: normal;">アップロード権限ロック</h3>
-        <p style="font-size: 0.8rem; color: #555; margin-bottom: 15px;">ファイルをアップロードするには、サークル専用アップロードパスワードを入力してください。</p>
-        <input type="password" id="uploader-password" placeholder="アップロード用パスワード" style="padding: 8px; font-size: 0.9rem; border: 1px solid #a2a9b1; width: 80%; margin-bottom: 15px; text-align: center;"><br>
-        <button onclick="unlockUploader()" class="btn" style="padding: 6px 20px; font-size: 0.85rem; background-color: #34495e; color: #fff;">ロック解除</button>
-        <p id="uploader-error" style="color: #c0392b; font-size: 0.8rem; margin-top: 10px; display: none;">パスワードが一致しません。</p>
-    </div>
-
-    <!-- アップローダー本体（認証完了時に表示） -->
-    <div id="uploader-form-container" style="display: none; background: #fff; border: 1px solid #a2a9b1; padding: 25px; border-radius: 4px; margin-top: 20px;">
-        <form id="wiki-upload-form" onsubmit="uploadToGithubWiki(event)">
-            <div style="margin-bottom: 15px; display: flex; flex-direction: column;">
-                <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.85rem;">GitHub 個人アクセストークン (PAT)</label>
-                <input type="password" id="wiki-git-token" required placeholder="ghp_xxxxxxxxxxxx" style="padding: 8px; border: 1px solid #a2a9b1; border-radius: 3px; font-size: 0.9rem;">
-                <span style="font-size: 0.75rem; color: #666; margin-top: 3px;">※リポジトリへの書込権限(repo)が付与されたトークン。</span>
-            </div>
-
-            <div style="margin-bottom: 15px; display: flex; flex-direction: column;">
-                <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.85rem;">GitHub ユーザー名（または組織名）</label>
-                <input type="text" id="wiki-git-owner" required placeholder="例: subaru-fan-club" style="padding: 8px; border: 1px solid #a2a9b1; border-radius: 3px; font-size: 0.9rem;">
-            </div>
-
-            <div style="margin-bottom: 15px; display: flex; flex-direction: column;">
-                <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.85rem;">リポジトリ名</label>
-                <input type="text" id="wiki-git-repo" required placeholder="例: connected-by-subaru" style="padding: 8px; border: 1px solid #a2a9b1; border-radius: 3px; font-size: 0.9rem;">
-            </div>
-
-            <div style="margin-bottom: 15px; display: flex; flex-direction: column;">
-                <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.85rem;">アップロード先パス（ファイル名）</label>
-                <input type="text" id="wiki-git-path" placeholder="例: blog-article-new.html（空欄の場合は選択したファイル名になります）" style="padding: 8px; border: 1px solid #a2a9b1; border-radius: 3px; font-size: 0.9rem;">
-            </div>
-
-            <div style="margin-bottom: 20px; display: flex; flex-direction: column;">
-                <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.85rem;">アップロードするHTMLファイルを選択</label>
-                <input type="file" id="wiki-html-file" accept=".html" required style="font-size: 0.9rem;">
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 5px; cursor: pointer; user-select: none;">
-                    <input type="checkbox" id="wiki-save-settings" checked> 設定情報（トークン、ユーザー名、リポジトリ）をブラウザに安全に記憶する
-                </label>
-            </div>
-
-            <button type="submit" class="btn" style="background-color: #0645ad; color: #fff; font-size: 0.85rem; padding: 8px 20px; border-radius: 3px;">GitHubへアップロード</button>
-        </form>
-
-        <div id="wiki-uploader-result" style="margin-top: 20px; padding: 15px; border-radius: 4px; display: none; font-size: 0.85rem; line-height: 1.5;"></div>
-    </div>
-</div>
-    `;
-
-    // ノート議論初期コメント（空で初期化）
-    const defaultNoteData = {
-        "topic-blog": [],
-        "topic-rules": [],
-        "topic-todo": [],
-        "topic-bugs": []
-    };
 
     let activeSubpageId = "wiki-page-basic"; // 現在アクティブなサブページのID
     let currentNoteTopic = "topic-blog"; // ノート（掲示板）の現在のアクティブトピック
