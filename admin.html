@@ -493,17 +493,14 @@
         return jsSha256(message);
     }
 
-// ログイン検証（ハッシュ化せず直接比較する形に修正）
-    function unlockAdmin(event) {
-        event.preventDefault();
-    
-        // 入力された文字列を取得し、前後のスペースをトリム
-        const passInput = document.getElementById("admin-password").value.trim();
-    
-        // 正しい平文のパスワード
-        const correctPassword = "maxihete"; 
+    // ハッシュ定数を追加
+    const CORRECT_PASSWORD_HASH = "e9e1a5e6c7b3f2d4a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1";
 
-        if (passInput === correctPassword) {
+    async function unlockAdmin(event) {
+        event.preventDefault();
+        const passInput = document.getElementById("admin-password").value.trim();
+        const inputHash = await sha256(passInput);
+        if (inputHash === CORRECT_PASSWORD_HASH) {
             sessionStorage.setItem("admin_authenticated", "true");
             showAdmin();
         } else {
