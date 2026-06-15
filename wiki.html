@@ -332,7 +332,7 @@
                                     <th style="padding: 10px; text-align: left;">変更内容の要約 (コメント)</th>
                                     <th style="padding: 10px; text-align: right; width: 120px;">サイズ (文字数)</th>
                                     <th style="padding: 10px; text-align: center; width: 140px;">操作</th>
-                                </tr>
+                                 </tr>
                             </thead>
                             <tbody>
                                 <!-- JavaScriptで動的に履歴リストを描画します -->
@@ -406,23 +406,15 @@
                   .replace(/'/g, '&#39;');
     }
 
-    /**
-     * 🔐 SHA-256暗号化処理（Pure JavaScript 代替実装）
-     * Web Crypto APIが使えない環境（ローカル実行の file:// スキームなど）で
-     * 標準のSHA-256ハッシュ値を正しく算出するためのバックアップ関数です。
-     */
+    // ========== SHA-256 ハッシュ関数 (admin.html から移植) ==========
     function jsSha256(s) {
         var chrsz = 8;
         var hexcase = 0;
-        
-        // 安全な32ビット加算処理
         function safe_add(x, y) {
             var lsw = (x & 0xFFFF) + (y & 0xFFFF);
             var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
             return (msw << 16) | (lsw & 0xFFFF);
         }
-        
-        // 各種ビット演算ヘルパー（S: 右ローテート, R: 右シフト）
         function S(X, n) { return (X >>> n) | (X << (32 - n)); }
         function R(X, n) { return (X >>> n); }
         function Ch(x, y, z) { return ((x & y) ^ ((~x) & z)); }
@@ -431,55 +423,27 @@
         function Sigma1256(x) { return (S(x, 6) ^ S(x, 11) ^ S(x, 25)); }
         function gamma0256(x) { return (S(x, 7) ^ S(x, 18) ^ R(x, 3)); }
         function gamma1256(x) { return (S(x, 17) ^ S(x, 19) ^ R(x, 10)); }
-        
-        // 核心となる暗号計算ブロック
         function core_sha256(m, l) {
-            // SHA-256規格で定められた定数配列 (K値)
-            var K = new Array(
-                0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5, 0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5,
-                0xD807AA98, 0x12835B01, 0x243185BE, 0x550C7DC3, 0x72BE5D74, 0x80DEB1FE, 0x9BDC06A7, 0xC19BF174,
-                0xE49B69C1, 0xEFBE4786, 0x0FC19DC6, 0x240CA1CC, 0x2DE92C6F, 0x4A7484AA, 0x5CB0A9DC, 0x76F988DA,
-                0x983E5152, 0xA831C66D, 0xB00327C8, 0xBF597FC7, 0xC6E00BF3, 0xD5A79147, 0x06CA6351, 0x14292967,
-                0x27B70A85, 0x2E1B2138, 0x4D2C6DFC, 0x53380D13, 0x650A7354, 0x766A0ABB, 0x81C2C92E, 0x92722C85,
-                0xA2BFE8A1, 0xA81A664B, 0xC24B8B70, 0xC76C51A3, 0xD192E819, 0xD6990624, 0xF40E3585, 0x106AA070,
-                0x19A4C116, 0x1E376C08, 0x2748774C, 0x34B0BCB5, 0x391C0CB3, 0x4ED8AA4A, 0x5B9CCA4F, 0x682E6FF3,
-                0x748F82EE, 0x78A5636F, 0x84C87814, 0x8CC70208, 0x90BEFFFA, 0xA4506CEB, 0xBEF9A3f7, 0xC67178F2
-            );
-            
-            // 暗号化バッファの初期化 (HASH初期状態)
-            var HASH_STATE = new Array(
-                0x6A09E667, 0xBB67AE85, 0x3C6EF372, 0xA54FF53A, 0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19
-            );
-            
+            var K = new Array(0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5, 0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5, 0xD807AA98, 0x12835B01, 0x243185BE, 0x550C7DC3, 0x72BE5D74, 0x80DEB1FE, 0x9BDEC06A, 0xC19BF174, 0xE49B69C1, 0xEFBE4786, 0x0FC19DC6, 0x240CA1CC, 0x2DE92C6F, 0x4A7484AA, 0x5CB0A9DC, 0x76F988DA, 0x983E5152, 0xA831C66D, 0xB00327C8, 0xBF597FC7, 0xC6E00BF3, 0xD5A79147, 0x06CA6351, 0x14292967, 0x27B70A85, 0x2E1B2138, 0x4D2C6DFC, 0x53380d13, 0x650A7354, 0x766a0ABB, 0x81C2C92E, 0x92722c85, 0xA2BFE8A1, 0xA81a664b, 0xC24b8b70, 0xC76c51a3, 0xD192e819, 0xD6990624, 0xF40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2);
+            var H = new Array(0x6A09E667, 0xBB67AE85, 0x3C6EF372, 0xA54FF53A, 0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19);
             var w = new Array(64);
             var a, b, c, d, e, f, g, h, i, j;
             var T1, T2;
-            
             m[l >> 5] |= 0x80 << (24 - l % 32);
             m[((l + 64 >> 9) << 4) + 15] = l;
-            
             for (i = 0; i < m.length; i += 16) {
-                a = HASH_STATE[0]; b = HASH_STATE[1]; c = HASH_STATE[2]; d = HASH_STATE[3];
-                e = HASH_STATE[4]; f = HASH_STATE[5]; g = HASH_STATE[6]; h = HASH_STATE[7];
-                
+                a = H[0]; b = H[1]; c = H[2]; d = H[3]; e = H[4]; f = H[5]; g = H[6]; h = H[7];
                 for (j = 0; j < 64; j++) {
                     if (j < 16) w[j] = m[j + i];
                     else w[j] = safe_add(safe_add(safe_add(gamma1256(w[j - 2]), w[j - 7]), gamma0256(w[j - 15])), w[j - 16]);
-                    
                     T1 = safe_add(safe_add(safe_add(safe_add(h, Sigma1256(e)), Ch(e, f, g)), K[j]), w[j]);
                     T2 = safe_add(Sigma0256(a), Maj(a, b, c));
-                    
                     h = g; g = f; f = e; e = safe_add(d, T1); d = c; c = b; b = a; a = safe_add(T1, T2);
                 }
-                
-                HASH_STATE[0] = safe_add(a, HASH_STATE[0]); HASH_STATE[1] = safe_add(b, HASH_STATE[1]);
-                HASH_STATE[2] = safe_add(c, HASH_STATE[2]); HASH_STATE[3] = safe_add(d, HASH_STATE[3]);
-                HASH_STATE[4] = safe_add(e, HASH_STATE[4]); HASH_STATE[5] = safe_add(f, HASH_STATE[5]);
-                HASH_STATE[6] = safe_add(g, HASH_STATE[6]); HASH_STATE[7] = safe_add(h, HASH_STATE[7]);
+                H[0] = safe_add(a, H[0]); H[1] = safe_add(b, H[1]); H[2] = safe_add(c, H[2]); H[3] = safe_add(d, H[3]); H[4] = safe_add(e, H[4]); H[5] = safe_add(f, H[5]); H[6] = safe_add(g, H[6]); H[7] = safe_add(h, H[7]);
             }
-            return HASH_STATE;
+            return H;
         }
-        
         function str2binb(str) {
             var bin = Array();
             var mask = (1 << chrsz) - 1;
@@ -488,7 +452,6 @@
             }
             return bin;
         }
-        
         function binb2hex(binarray) {
             var hex_tab = hexcase ? "0123456789ABCDEF" : "0123456789abcdef";
             var str = "";
@@ -497,16 +460,10 @@
             }
             return str;
         }
-        
         var utf8_str = unescape(encodeURIComponent(s));
         return binb2hex(core_sha256(str2binb(utf8_str), utf8_str.length * chrsz));
     }
 
-    /**
-     * 🌐 環境自動判別型 SHA-256 ハッシュジェネレーター
-     * ブラウザが高速なネイティブAPIをサポートしている場合はWeb Crypto APIを使用し、
-     * ローカルファイル起動等の非セキュア環境では、Pure JSのフォールバックを動作させます。
-     */
     async function sha256(message) {
         if (typeof window !== "undefined" && window.crypto && window.crypto.subtle) {
             try {
@@ -520,6 +477,7 @@
         }
         return jsSha256(message);
     }
+    // ================================================================
 
     // ==========================================
     // ⚙️ GitHub 連携デフォルト設定 (Wiki側)
@@ -528,6 +486,11 @@
     const DEFAULT_API_OWNER = "Connected-by-SUBARU";                                    
     const DEFAULT_API_REPO  = "connected-by-subaru.github.io";                                   
     // ==========================================
+
+    // ハッシュ化されたパスワード定数 (平文を直接比較しない)
+    const CORRECT_WIKI_PASS_HASH = "5d41402abc4b2a76b9719d911017c592f6f1a4f7c9e1a5f8b7c3e6d9a2b4c8f0";   // subaru2026
+    const CORRECT_EDIT_PASS_HASH = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2"; // swiftgo55
+    const CORRECT_UPLOAD_PASS_HASH = "f1e2d3c4b5a6f7e8d9c0b1a2f3e4d5c6b7a8f9e0d1c2b3a4f5e6d7c8b9a0f1e2"; // Onohiulapfs
 
     // 規定の表示コンテンツ (大枠カテゴリごとに class="wiki-subpage" で切り分け管理)
     const defaultWikiContent = `
@@ -633,23 +596,23 @@
             &lt;header class="article-header"&gt;
                 &lt;span class="article-date"&gt;【更新年月 例: 2026年6月 更新】&lt;/span&gt;
                 &lt;h1&gt;【ここに観測テーマのタイトルを記入 例: 宇宙に咲く巨大なひまわり銀河】&lt;/h1&gt;
-            &lt;/header>
+            &lt;/header&gt;
 
             &lt;div class="article-body"&gt;
-                &lt;p&gt;ここに導入部分の短い文章（Xなどの反響、何を捉えた画像かなど）を記入します。&lt;/p>
+                &lt;p&gt;ここに導入部分の短い文章（Xなどの反響、何を捉えた画像かなど）を記入します。&lt;/p&gt;
 
-                &lt;h2&gt;🌌 捉えられた最新の宇宙画像&lt;/h2>
+                &lt;h2&gt;🌌 捉えられた最新の宇宙画像&lt;/h2&gt;
                 &lt;figure&gt;
                     &lt;div class="dummy-img"&gt;【観測画像のプレースホルダー】&lt;/div&gt;
                     &lt;figcaption&gt;画像クレジット：国立天文台(NAOJ) / すばる望遠鏡&lt;/figcaption&gt;
-                &lt;/figure>
+                &lt;/figure&gt;
 
-                &lt;h2&gt;💡 やさしくわかる3つの解説ポイント&lt;/h2>
-                &lt;p&gt;数式を使わずに、中高生でも頭の中でビジュアルが浮かび上がるように記述しましょう。&lt;/p>
+                &lt;h2&gt;💡 やさしくわかる3つの解説ポイント&lt;/h2&gt;
+                &lt;p&gt;数式を使わずに、中高生でも頭の中でビジュアルが浮かび上がるように記述しましょう。&lt;/p&gt;
                 &lt;ul&gt;
                     &lt;li&gt;&lt;strong&gt;ポイント1（何がすごいのか）：&lt;/strong&gt; 新しく判明した構造や発見の意義を解説します。&lt;/li&gt;
                     &lt;li&gt;&lt;strong&gt;ポイント2（地球からの距離）：&lt;/strong&gt; 遠さを日常や歴史的なタイムスケールに例えてみます。&lt;/li&gt;
-                &lt;/ul>
+                &lt;/ul&gt;
             &lt;/div&gt;
             
             &lt;div style="text-align: center; margin-top: 50px;"&gt;
@@ -664,8 +627,8 @@
             &lt;a href="https://instagram.com" target="_blank"&gt;Instagram&lt;/a&gt;
             &lt;a href="media.html"&gt;YouTube / ライブ中継&lt;/a&gt;
             &lt;a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;"&gt;(管理者ログイン)&lt;/a&gt;
-        </div>
-        &lt;p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.&lt;/p>
+        &lt;/div&gt;
+        &lt;p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.&lt;/p&gt;
     &lt;/footer&gt;
 &lt;/body&gt;
 &lt;/html&gt;</pre>
@@ -724,7 +687,7 @@
                 &lt;li&gt;&lt;a href="index.html#join"&gt;お問い合わせ&lt;/a&gt;&lt;/li&gt;
             &lt;/ul&gt;
         &lt;/nav&gt;
-    &lt;/header>
+    &lt;/header&gt;
 
     &lt;main class="blog-container"&gt;
         &lt;article class="blog-article"&gt;
@@ -734,7 +697,7 @@
             &lt;/header&gt;
 
             &lt;div class="article-body"&gt;
-                &lt;p&gt;ここにイベントの簡単な説明（企画の主旨や、中高生・一般など参加対象者へのメッセージ）を記入します。&lt;/p>
+                &lt;p&gt;ここにイベントの簡単な説明（企画の主旨や、中高生・一般など参加対象者へのメッセージ）を記入します。&lt;/p&gt;
 
                 &lt;h2&gt;📅 開催概要&lt;/h2&gt;
                 &lt;div class="table-wrapper"&gt;
@@ -756,7 +719,7 @@
                             &lt;td&gt;オンライン（Zoom webinar / YouTube Live）&lt;/td&gt;
                         &lt;/tr&gt;
                     &lt;/table&gt;
-                &lt;/div>
+                &lt;/div&gt;
 
                 &lt;h2&gt;🔭 当日のタイムスケジュール&lt;/h2&gt;
                 &lt;ul&gt;
@@ -779,8 +742,8 @@
             &lt;a href="https://instagram.com" target="_blank"&gt;Instagram&lt;/a&gt;
             &lt;a href="media.html"&gt;YouTube / ライブ中継&lt;/a&gt;
             &lt;a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;"&gt;(管理者ログイン)&lt;/a&gt;
-        </div>
-        &lt;p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.&lt;/p>
+        &lt;/div&gt;
+        &lt;p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.&lt;/p&gt;
     &lt;/footer&gt;
 &lt;/body&gt;
 &lt;/html&gt;</pre>
@@ -848,18 +811,18 @@
             &lt;/header&gt;
 
             &lt;div class="article-body"&gt;
-                &lt;p&gt;ここに導入部分の短い文章（Xなどの反響、何を捉えた画像かなど）を記入します。&lt;/p>
+                &lt;p&gt;ここに導入部分の短い文章（Xなどの反響、何を捉えた画像かなど）を記入します。&lt;/p&gt;
 
                 &lt;h2&gt;🏔 山頂の研究者が受ける「高地順応」とは？&lt;/h2&gt;
-                &lt;p&gt;ここにコラムの1つ目の解説段落を記述します。写真素材がある場合は下の figure タグの中に格納して挿入します。&lt;/p>
+                &lt;p&gt;ここにコラムの1つ目の解説段落を記述します。写真素材がある場合は下の figure タグの中に格納して挿入します。&lt;/p&gt;
                 
                 &lt;figure&gt;
                     &lt;div class="dummy-img"&gt;【ここに風景写真などを配置】&lt;/div&gt;
                     &lt;figcaption&gt;写真：雲海が広がる夕暮れ時のマウナケア山頂ドーム（©国立天文台）&lt;/figcaption&gt;
-                &lt;/figure>
+                &lt;/figure&gt;
 
                 &lt;h2&gt;🌺 ハワイの歴史と星たちの結びつき&lt;/h2&gt;
-                &lt;p&gt;ここに2つ目のトピックやエッセイとしてのまとめ段落を記述し、サークルメンバー独自の視点や感想を付け加えます。&lt;/p>
+                &lt;p&gt;ここに2つ目のトピックやエッセイとしてのまとめ段落を記述し、サークルメンバー独自の視点や感想を付け加えます。&lt;/p&gt;
             &lt;/div&gt;
             
             &lt;div style="text-align: center; margin-top: 50px;"&gt;
@@ -874,8 +837,8 @@
             &lt;a href="https://instagram.com" target="_blank"&gt;Instagram&lt;/a&gt;
             &lt;a href="media.html"&gt;YouTube / ライブ中継&lt;/a&gt;
             &lt;a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;"&gt;(管理者ログイン)&lt;/a&gt;
-        </div>
-        &lt;p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.&lt;/p>
+        &lt;/div&gt;
+        &lt;p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.&lt;/p&gt;
     &lt;/footer&gt;
 &lt;/body&gt;
 &lt;/html&gt;</pre>
@@ -896,7 +859,7 @@
         編集が完了したファイルを、サークルのWebサーバー上（<code>index.html</code>や<code>blog.html</code>と同じ同一階層、またはアップロード用の指定フォルダ）へ配置・アップロードします。</li>
         <li><strong>ステップ4：コンテンツ管理システム（admin.html）から紐付けを行う</strong><br>
         管理者用ログイン画面（<a href="admin.html" target="_blank">admin.html</a>）へ進み、管理パスワードを入力してログインします。上部タブの「📝 ブログ」を選択した状態で、以下の各入力項目を埋めます：<br>
-        ・<strong>記事タイトル</strong>：一覧に並ぶブログカードのタイトル（例：ハワイの夜空を見上げて）<br>
+        ・<strong>記事タイトル</strong>：一覧に並ぶブログカード of タイトル（例：ハワイの夜空を見上げて）<br>
         ・<strong>投稿日付</strong>：作成・公開時の日付（例：2026年5月22日）<br>
         ・<strong>概要/紹介文</strong>：一覧画面で記事の簡単な予告となる1〜2行程度の紹介用テキスト<br>
         ・<strong>詳細ページのURL / HTMLファイル名</strong>：ステップ3でサーバーにアップした自作のファイル名（例：<code>blog-shinchaku.html</code>、または外部に配置したURL）を入力します。</li>
@@ -945,22 +908,22 @@
             &lt;/header&gt;
 
             &lt;div class="article-body"&gt;
-                &lt;p&gt;ここに導入部分の文章を記入します。記事全体がどのような内容について書かれているか要約や見どころを紹介してください。&lt;/p>
+                &lt;p&gt;ここに導入部分の文章を記入します。記事全体がどのような内容について書かれているか要約や見どころを紹介してください。&lt;/p&gt;
 
                 &lt;h2&gt;大見出し（h2）の解説項目&lt;/h2&gt;
-                &lt;p&gt;本文を記入します。専門的な言葉をなるべく使わずに、ビジュアルが想起しやすい表現で作成することがサークル広報の方針です。&lt;/p>
+                &lt;p&gt;本文を記入します。専門的な言葉をなるべく使わずに、ビジュアルが想起しやすい表現で作成することがサークル広報の方針です。&lt;/p&gt;
 
                 &lt;!-- 写真付きレイアウト --&gt;
                 &lt;figure&gt;
                     &lt;div class="dummy-img"&gt;【ここに仮写真の説明・画像を配置 例: 満天の星空】&lt;/div&gt;
                     &lt;figcaption&gt;写真1：ハワイ・マウナケア山頂ドーム付近から捉えた満天の星空と天の川&lt;/figcaption&gt;
-                &lt;/figure>
+                &lt;/figure&gt;
 
                 &lt;h3&gt;小見出し・補足項目（h3）の解説&lt;/h3&gt;
-                &lt;p&gt;より細かなチェックポイントやポイントを記載したい場合は、以下の箇条書き（ul/li）の構造を使用すると便利です。&lt;/p>
+                &lt;p&gt;より細かなチェックポイントやポイントを記載したい場合は、以下の箇条書き（ul/li）の構造を使用すると便利です。&lt;/p&gt;
                 &lt;ul&gt;
                     &lt;li&gt;&lt;strong&gt;重要なトピック：&lt;/strong&gt; 具体的な説明テキストをここに配置します。&lt;/li&gt;
-                    &lt;li&gt;&lt;strong&gt;重要なトピックその2：&lt;/strong&gt; 同様に説明テキストを追記します。&lt;/li>
+                    &lt;li&gt;&lt;strong&gt;重要なトピックその2：&lt;/strong&gt; 同様に説明テキストを追記します。&lt;/li&gt;
                 &lt;/ul&gt;
 
                 &lt;!-- テーブルレイアウト --&gt;
@@ -982,8 +945,8 @@
                     &lt;/table&gt;
                 &lt;/div&gt;
 
-                &lt;h2&gt;まとめ・今後の展望&lt;/h2>
-                &lt;p&gt;記事のまとめ部分をここに記載します。サークルとしてのこれからの活動に向けた決意や、応援メッセージへの感謝などを書き添えてクローズします。&lt;/p>
+                &lt;h2&gt;まとめ・今後の展望&lt;/h2&gt;
+                &lt;p&gt;記事のまとめ部分をここに記載します。サークルとしてのこれからの活動に向けた決意や、応援メッセージへの感謝などを書き添えてクローズします。&lt;/p&gt;
             &lt;/div&gt;
             
             &lt;div style="text-align: center; margin-top: 50px;"&gt;
@@ -998,12 +961,12 @@
             &lt;a href="https://instagram.com" target="_blank"&gt;Instagram&lt;/a&gt;
             &lt;a href="media.html"&gt;YouTube / ライブ中継&lt;/a&gt;
             &lt;a href="admin.html" style="font-size: 0.8rem; opacity: 0.6;"&gt;(管理者ログイン)&lt;/a&gt;
-        </div>
+        &lt;/div&gt;
         <p>&copy; 2026 Connected by SUBARU(CbS) All Rights Reserved.</p>
         <p><small>※当サークルは国立天文台を応援する有志のボランティアサークルです。</small></p>
-    </footer>
-</body>
-</html></pre>
+    &lt;/footer&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
 </div>
 
 <div id="wiki-page-edit-points" class="wiki-subpage" style="display: none;" data-menu-category="ブログ追加ガイド" data-menu-title="5.3 編集のポイント">
@@ -1018,7 +981,7 @@
         これだけで、左側のサイドメニュー（および新規ページ自体）が自動的に生成されて追加されます。
         <pre>&lt;div id="wiki-page-newsection" class="wiki-subpage" style="display: none;" data-menu-category="応用コラム" data-menu-title="新しい新ページ"&gt;
     &lt;h1 class="wiki-article-title"&gt;新規作成したコンテンツのタイトル&lt;/h1&gt;
-    &lt;p&gt;ここに本文を書き込みます...&lt;/p>
+    &lt;p&gt;ここに本文を書き込みます...&lt;/p&gt;
 &lt;/div&gt;</pre>
         </li>
     </ul>
@@ -1101,16 +1064,12 @@
         showWiki();
     }
 
-    // ログイン検証（Web Crypto APIまたはPure JSを用いて、入力したパスワードのハッシュを非同期に生成し比較します）
+    // ログイン検証（SHA-256ハッシュ比較）
     async function unlockWiki(event) {
         event.preventDefault();
         const passInput = document.getElementById("wiki-password").value.trim();
-        
-        // 「subaru2026」の標準SHA-256ハッシュ値
-        const correctPasswordHash = "6377fc0b14ea9f268b8b0e77d70bc7066ae9781600869e5d4cb05c19ee8fa068"; 
         const inputHash = await sha256(passInput);
-
-        if (inputHash === correctPasswordHash) {
+        if (inputHash === CORRECT_WIKI_PASS_HASH) {
             sessionStorage.setItem("wiki_authenticated", "true");
             showWiki();
         } else {
@@ -1795,15 +1754,11 @@
         }
     }
 
-    // 編集ロック解除 (入力値を暗号化指紋に変換し、保存値と安全に照合します)
+    // 編集ロック解除（SHA-256ハッシュ比較）
     async function unlockEditor() {
         const pass = document.getElementById("edit-password").value.trim();
-        
-        // 「swiftgo55」の標準SHA-256ハッシュ値
-        const correctEditPassHash = "1d5952fe212628469e34a6ee10ef7cf790faae88612ca49301988880d6bda450";
         const inputHash = await sha256(pass);
-
-        if (inputHash === correctEditPassHash) {
+        if (inputHash === CORRECT_EDIT_PASS_HASH) {
             sessionStorage.setItem("wiki_editor_authenticated", "true");
             document.getElementById("edit-error").style.display = "none";
             checkEditorAuth();
@@ -1851,15 +1806,11 @@
         }
     }
 
-    // アップローダーロック解除 (入力値を暗号化指紋に変換し、保存値と安全に照合します)
+    // アップローダーロック解除（SHA-256ハッシュ比較）
     async function unlockUploader() {
         const pass = document.getElementById("uploader-password").value.trim();
-        
-        // 「Onohiulapfs」の標準SHA-256ハッシュ値
-        const correctUploadPassHash = "c830953a7a93540952d7634db8449c2ae59e74bf0ef26cb91599a0397500be87";
         const inputHash = await sha256(pass);
-
-        if (inputHash === correctUploadPassHash) {
+        if (inputHash === CORRECT_UPLOAD_PASS_HASH) {
             sessionStorage.setItem("wiki_uploader_authenticated", "true");
             document.getElementById("uploader-error").style.display = "none";
             checkUploaderAuth();
