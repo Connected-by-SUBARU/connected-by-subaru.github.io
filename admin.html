@@ -501,13 +501,24 @@
         // 「maxihete」のSHA-256ハッシュ値
         const correctPasswordHash = "237bf30db52e1bdf6961448b1fc9fb1ec28f41f71f697475fdfef10c7104b2b7"; 
     
-        const inputHash = await sha256(passInput);
+        try {
+            const inputHash = await sha256(passInput);
+            
+            // 🔍 【デバッグ出力】F12キーで開発者ツールの「コンソール」を開いて確認します
+            console.log("--- CbS 認証デバッグ情報 ---");
+            console.log("1. 実際に入力された文字列:", JSON.stringify(passInput));
+            console.log("2. 算出されたハッシュ値  :", inputHash);
+            console.log("3. 目標とするハッシュ値  :", correctPasswordHash);
+            console.log("----------------------------");
 
-        if (inputHash === correctPasswordHash) {
-            sessionStorage.setItem("admin_authenticated", "true");
-            showAdmin();
-        } else {
-            document.getElementById("admin-error").style.display = "block";
+            if (inputHash === correctPasswordHash) {
+                sessionStorage.setItem("admin_authenticated", "true");
+                showAdmin();
+            } else {
+                document.getElementById("admin-error").style.display = "block";
+            }
+        } catch (error) {
+            console.error("🔑 認証処理中にエラーが発生しました:", error);
         }
     }
 
