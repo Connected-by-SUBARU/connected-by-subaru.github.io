@@ -90,7 +90,7 @@
             <div style="background: #eef2f7; border: 1px solid #ccd6e0; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
                 <h3 style="color: #0b132b; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">⚙️ データベース永続化設定 (GitHub連携)</h3>
                 <p style="font-size: 0.8rem; color: #555; margin-bottom: 15px;">
-                    変更内容をクラウド（GitHubの data.json）に保存するための設定です。個人アクセストークン（repo権限）を入力してください。
+                    変更内容をクラウド（GitHubの data.json）に保存するための設定です。コード内にあらかじめ初期設定がされている場合は、このフォームを手動で編集する必要はありません。
                 </p>
                 <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                     <div style="flex: 1; min-width: 200px; display:flex; flex-direction:column;">
@@ -137,12 +137,12 @@
                             <input type="text" id="blog-date" class="auto-date" required placeholder="例：2026年5月21日">
                         </div>
                         <div class="form-group">
-                            <label for="blog-summary">概要 / 紹介用の短いテキスト</label>
+                            <label for="blog-summary">概要 / 紹介用の短いテキスト（記事一覧に表示されます）</label>
                             <input type="text" id="blog-summary" required placeholder="例：昨夜は非常に澄んだ空で、天の川の撮影に成功しました。">
                         </div>
                         <div class="form-group">
-                            <label for="blog-content">詳細ページのURL / HTMLファイル名</label>
-                            <input type="text" id="blog-content" required placeholder="例：blog-article.html、または https://...">
+                            <label for="blog-content">詳細ページのURL / HTMLファイル名（「続きを読む」のリンク先になります）</label>
+                            <input type="text" id="blog-content" required placeholder="例：blog-article.html、または https://... などの外部URL">
                         </div>
                         <button type="submit" id="blog-submit-btn" class="btn">ブログを発行・更新する</button>
                         <button type="button" id="blog-cancel-btn" class="btn" style="background:#888; display:none; margin-left: 10px;" onclick="cancelEdit('blog')">キャンセル</button>
@@ -157,7 +157,7 @@
                     <form id="add-events-form" onsubmit="saveData(event, 'events')">
                         <div class="form-group">
                             <label for="event-title">イベントタイトル</label>
-                            <input type="text" id="event-title" required placeholder="例：秋の星空オンライン生中継">
+                            <input type="text" id="event-title" required placeholder="例：秋 of 星空オンライン生中継">
                         </div>
                         <div class="form-group">
                             <label for="event-date">開催日時</label>
@@ -180,8 +180,8 @@
                             <textarea id="event-desc" rows="4" required placeholder="イベントの見どころやスケジュールなどを入力してください。"></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="event-content">詳細ページのURL / HTMLファイル名</label>
-                            <input type="text" id="event-content" placeholder="例：event-detail.html、または https://...">
+                            <label for="event-content">詳細ページのURL / HTMLファイル名（「詳細・お申し込み」のリンク先になります）</label>
+                            <input type="text" id="event-content" placeholder="例：event-detail.html、または https://... などの外部URL">
                         </div>
                         <button type="submit" id="events-submit-btn" class="btn">イベント告知を発行する</button>
                         <button type="button" id="events-cancel-btn" class="btn" style="background:#888; display:none; margin-left: 10px;" onclick="cancelEdit('events')">キャンセル</button>
@@ -195,7 +195,7 @@
                     <h3 id="monthly-form-title" style="margin-bottom: 20px; color: #0b132b; border-bottom: 1px solid #eee; padding-bottom: 10px;">🌌 今月のすばるカードを追加</h3>
                     <form id="add-monthly-form" onsubmit="saveData(event, 'monthly')">
                         <div class="form-group">
-                            <label for="monthly-title">タイトル</label>
+                            <label for="monthly-title">タイトル（観測成果の簡易説明）</label>
                             <input type="text" id="monthly-title" required placeholder="例：超新星爆発の残骸から紐解く宇宙の歴史">
                         </div>
                         <div class="form-group">
@@ -207,12 +207,12 @@
                             <input type="text" id="monthly-img-text" required placeholder="例：星雲の鮮明画像">
                         </div>
                         <div class="form-group">
-                            <label for="monthly-desc">分かりやすい解説</label>
+                            <label for="monthly-desc">分かりやすい解説（数式を使わない説明文）</label>
                             <textarea id="monthly-desc" rows="4" required placeholder="一般の方へ向けたやさしい解説を入力してください。"></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="monthly-content">解説ページのURL / HTMLファイル名</label>
-                            <input type="text" id="monthly-content" placeholder="例：monthly-article.html">
+                            <label for="monthly-content">解説ページのURL / HTMLファイル名（「解説を読む」のリンク先になります）</label>
+                            <input type="text" id="monthly-content" placeholder="例：monthly-article.html、または https://... などの外部URL">
                         </div>
                         <button type="submit" id="monthly-submit-btn" class="btn">解説カードを発行する</button>
                         <button type="button" id="monthly-cancel-btn" class="btn" style="background:#888; display:none; margin-left: 10px;" onclick="cancelEdit('monthly')">キャンセル</button>
@@ -242,8 +242,8 @@
                             <textarea id="mk-desc" rows="4" required placeholder="コラム記事の導入や見どころ文を入力してください。"></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="maunakea-content">詳細ページのURL / HTMLファイル名</label>
-                            <input type="text" id="maunakea-content" placeholder="例：maunakea-article.html">
+                            <label for="maunakea-content">詳細ページのURL / HTMLファイル名（「記事を読む」のリンク先になります）</label>
+                            <input type="text" id="maunakea-content" placeholder="例：maunakea-article.html、または https://... などの外部URL">
                         </div>
                         <button type="submit" id="maunakea-submit-btn" class="btn">コラム記事を発行する</button>
                         <button type="button" id="maunakea-cancel-btn" class="btn" style="background:#888; display:none; margin-left: 10px;" onclick="cancelEdit('maunakea')">キャンセル</button>
@@ -261,15 +261,15 @@
                             <input type="text" id="mem-name" required placeholder="例：すばる　太郎">
                         </div>
                         <div class="form-group">
-                            <label for="mem-role">役職・担当</label>
+                            <label for="mem-role">役職・担当（英字・複数可）</label>
                             <input type="text" id="mem-role" required placeholder="例：Hawaii Culturist / Writer">
                         </div>
                         <div class="form-group">
-                            <label for="mem-year">加入年度</label>
+                            <label for="mem-year">加入年度（西暦または和暦）</label>
                             <input type="text" id="mem-year" required placeholder="例：2026">
                         </div>
                         <div class="form-group">
-                            <label for="mem-category">所属カテゴリ</label>
+                            <label for="mem-category">所属カテゴリ（班や活動領域など）</label>
                             <input type="text" id="mem-category" required placeholder="例：代表・開発、デザイン、企画">
                         </div>
                         <div class="form-group">
@@ -277,8 +277,8 @@
                             <input type="text" id="mem-photo" maxlength="1" required placeholder="例：横">
                         </div>
                         <div class="form-group">
-                            <label for="mem-comment">活動に対するコメント・自己紹介</label>
-                            <textarea id="mem-comment" rows="4" placeholder="サークルでの抱負や目標などを入力してください。"></textarea>
+                            <label for="mem-comment">活動に対するコメント・自己紹介（任意・後から追加可能）</label>
+                            <textarea id="mem-comment" rows="4" placeholder="サークルでの抱負や目標などを入力してください。空欄のままでも登録・更新が可能です。"></textarea>
                         </div>
                         <button type="submit" id="members-submit-btn" class="btn">新メンバーを登録する</button>
                         <button type="button" id="members-cancel-btn" class="btn" style="background:#888; display:none; margin-left: 10px;" onclick="cancelEdit('members')">キャンセル</button>
@@ -289,12 +289,19 @@
             <!-- コンテンツ管理テーブル -->
             <div class="post-manager">
                 <h3 id="table-title" style="color: #0b132b; margin-bottom: 10px;">🗂 投稿済みコンテンツの管理</h3>
-                <p style="font-size: 0.85rem; color: #888;">選択中のカテゴリに登録されているコンテンツが表示されます。</p>
+                <p style="font-size: 0.85rem; color: #888;">初期値データも含めて、選択中のカテゴリに登録されているコンテンツが表示されます。</p>
                 <table id="posts-table">
                     <thead>
-                        <tr><th>カテゴリ</th><th>識別要素 / 日付</th><th>タイトル / 氏名</th><th>操作</th></tr>
+                        <tr>
+                            <th>カテゴリ</th>
+                            <th>識別要素 / 日付</th>
+                            <th>タイトル / 氏名</th>
+                            <th>操作</th>
+                        </tr>
                     </thead>
-                    <tbody></tbody>
+                    <tbody>
+                        <!-- JavaScriptで動的にテーブル描画 -->
+                    </tbody>
                 </table>
             </div>
 
@@ -315,9 +322,10 @@
         <p><small>※当サークルは国立天文台を応援する有志のボランティアサークルです。</small></p>
     </footer>
 
+    <!-- 初期データ同期 & ロジック -->
     <script>
     // ==========================================
-    // GitHub 連携デフォルト設定
+    // ⚙️ GitHub 連携デフォルト設定
     // ==========================================
     const DEFAULT_API_TOKEN = ""; 
     const DEFAULT_API_OWNER = "Connected-by-SUBARU"; 
@@ -332,19 +340,20 @@
     ];
 
     const defaultEvents = [
-        { id: "default-event-1", title: "🌟 夏のオンライン観望会", date: "2026年7月11日（土）20:00 〜 21:30", location: "オンライン（Zoom配信）", status: "参加受付中", desc: "ハワイ・マウナケアの星空カメラと中継をつなぎ、みんなで星空を眺めるイベントです。", content: "#" },
-        { id: "default-event-2", title: "🔭 CbS 新入メンバー歓迎 勉強会", date: "2026年5月9日（土）14:00 〜 16:00", location: "都内会議室 ＆ オンライン", status: "終了しました", desc: "すばる望遠鏡の基本的な仕組みや活動計画を共有するキックオフミーティングです。", content: "#" }
+        { id: "default-event-1", title: "🌟 夏のオンライン観望会", date: "2026年7月11日（土）20:00 〜 21:30", location: "オンライン（Zoom配信）", status: "参加受付中", desc: "ハワイ・マウナケアの星空カメラと中継をつなぎ、みんなで星空を眺めるイベントです。サークルメンバーによる星座解説もあります！専門知識は不要ですので、お気軽にご参加ください。", content: "#" },
+        { id: "default-event-2", title: "🔭 CbS 新入メンバー歓迎 勉強会", date: "2026年5月9日（土）14:00 〜 16:00", location: "都内会議室 ＆ オンライン", status: "終了しました", desc: "すばる望遠鏡の基本的な仕組みや、広報支援サークルとしての今後の活動計画を共有するキックオフミーティングです。", content: "#" }
     ];
 
     const defaultMonthly = [
-        { id: "default-monthly-1", title: "宇宙の果ての巨大銀河を発見！", date: "2026年5月 更新", imgText: "（銀河の画像）", desc: "地球から130億光年以上も離れた場所に、想像以上に成長した銀河が見つかりました。", content: "#" },
-        { id: "default-monthly-2", title: "星の赤ちゃんが生まれるゆりかご", date: "2026年4月 更新", imgText: "（星が生まれる場所の画像）", desc: "チリとガスが渦巻く星雲の中で、新しい星が誕生しようとしている様子が撮影されました。", content: "#" }
+        { id: "default-monthly-1", title: "宇宙の果ての巨大銀河を発見！", date: "2026年5月 更新", imgText: "（銀河の画像）", desc: "地球から130億光年以上も離れた場所に、想像以上に成長した銀河が見つかりました。タイムマシンに乗って昔の宇宙を覗いているような感覚です！", content: "#" },
+        { id: "default-monthly-2", title: "星の赤ちゃんが生まれるゆりかご", date: "2026年4月 更新", imgText: "（星が生まれる場所 of 画像）", desc: "チリとガスが渦巻く星雲の中で、まさに今、新しい星が誕生しようとしている様子が鮮明に撮影されました。超高解像度ならではの1枚です。", content: "#" },
+        { id: "default-monthly-3", title: "第二の地球を探して", date: "2026年3月 更新", imgText: "（惑星 of 画像）", desc: "すばる望遠鏡の特殊な装置を使って、太陽系外の惑星を直接撮影することに成功。そこには生命が存在するのでしょうか？", content: "#" }
     ];
 
     const defaultMaunakea = [
-        { id: "default-mk-3", vol: "Vol. 3", title: "標高4,200mの世界！空気が薄いとどうなる？", imgText: "（山の風景）", desc: "すばる望遠鏡があるマウナケア山頂は富士山よりも高い場所。高山病対策の裏側に迫ります。", content: "#" },
-        { id: "default-mk-2", vol: "Vol. 2", title: "ハワイの伝統文化と「星」の深いつながり", imgText: "（ハワイの星空）", desc: "古代ポリネシアの人々は星の光だけを頼りにハワイへ辿り着いたと言われています。", content: "#" },
-        { id: "default-mk-1", vol: "Vol. 1", title: "直径8.2メートルの巨大な鏡、どうやって洗うの？", imgText: "（望遠鏡の鏡）", desc: "主鏡の洗浄作業。その驚きの方法とは！？", content: "#" }
+        { id: "default-mk-3", vol: "Vol. 3", title: "標高4,200mの世界！空気が薄いとどうなる？", imgText: "（山の風景）", desc: "すばる望遠鏡があるマウナケア山頂は、富士山よりも高い場所にあります。空気が地上の約6割しかない環境で、研究者たちはどのように観測をしているのでしょうか？高山病対策の裏側に迫ります。", content: "#" },
+        { id: "default-mk-2", vol: "Vol. 2", title: "ハワイの伝統文化と「星」の深いつながり", imgText: "（ハワイの星空）", desc: "古代ポリネシアの人々は、羅針盤を持たずに星の光だけを頼りにハワイの島々へ辿り着いたと言われています。「ホクレア号」のエピソードなど、ハワイ文化と星のロマンチックな関係をご紹介。", content: "#" },
+        { id: "default-mk-1", vol: "Vol. 1", title: "直径8.2メートルの巨大な鏡、どうやって洗うの？", imgText: "（望遠鏡の鏡）", desc: "望遠鏡の命とも言える「主鏡」。少しのチリや汚れも許されないこの巨大な鏡を、実は現地スタッフが定期的に大掛かりな作業で洗浄しています。その驚きの洗浄方法とは！？", content: "#" }
     ];
 
     const defaultMembers = [
@@ -356,15 +365,10 @@
         { id: "default-member-6", name: "高森碧 (京都産業大)", role: "Product Planner / PR", photo: "高", comment: "", year: "2026", category: "企画・広報" }
     ];
 
-    // 初期化：データが存在しない場合のみデフォルトをセット（バージョンリセット廃止）
-    function initLocalStorage() {
-        if (!localStorage.getItem('cbs_blog_posts')) localStorage.setItem('cbs_blog_posts', JSON.stringify(defaultBlogs));
-        if (!localStorage.getItem('cbs_events_posts')) localStorage.setItem('cbs_events_posts', JSON.stringify(defaultEvents));
-        if (!localStorage.getItem('cbs_monthly_posts')) localStorage.setItem('cbs_monthly_posts', JSON.stringify(defaultMonthly));
-        if (!localStorage.getItem('cbs_maunakea_posts')) localStorage.setItem('cbs_maunakea_posts', JSON.stringify(defaultMaunakea));
-        if (!localStorage.getItem('cbs_members_posts')) localStorage.setItem('cbs_members_posts', JSON.stringify(defaultMembers));
-    }
+    const VERSION_KEY = "cbs_site_version";
+    const CURRENT_VERSION = "2026_v14";
 
+    // 1. data.jsonからのデータ読み込み
     async function loadInitialData() {
         try {
             const res = await fetch('./data.json?t=' + Date.now());
@@ -375,32 +379,558 @@
                 if (data.monthly) localStorage.setItem('cbs_monthly_posts', JSON.stringify(data.monthly));
                 if (data.maunakea) localStorage.setItem('cbs_maunakea_posts', JSON.stringify(data.maunakea));
                 if (data.members) localStorage.setItem('cbs_members_posts', JSON.stringify(data.members));
+                
+                // Wiki側のデータも巻き添えにしないために退避読み込みを掛けます
                 if (data.wiki_content) localStorage.setItem('cbs_wiki_content', data.wiki_content);
                 if (data.wiki_notes) localStorage.setItem('cbs_wiki_notes', JSON.stringify(data.wiki_notes));
                 if (data.wiki_history) localStorage.setItem('cbs_wiki_history', JSON.stringify(data.wiki_history));
+                
+                // 相互の初期化を防ぐため、ブログ側とWiki側の双方のバージョンキーを同時に更新
+                localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+                localStorage.setItem("cbs_wiki_version", "2026_v12");
             }
         } catch (e) {
-            console.warn("data.json fetch failed, using local cache.", e);
+            console.warn("Could not fetch data.json, falling back to local storage cache.", e);
         }
+
         initLocalStorage();
-        if (sessionStorage.getItem("admin_authenticated") === "true") showAdmin();
+
+        if (sessionStorage.getItem("admin_authenticated") === "true") {
+            showAdmin();
+        }
     }
+
     loadInitialData();
 
-    // 以降の関数はオリジナルと同じ（SHA-256, unlockAdmin, saveData, pushDataToGithub等）
-    // ただし pushDataToGithub 内のエラーメッセージを改善
-    // 以下、必要最低限の関数を記載（実際のコードはオリジナルとほぼ同じ）
-    // ここではスペースの都合上、主要関数のみ抜粋。実際の運用では完全なコードをアップロードしてください。
+    function initLocalStorage() {
+        const storedVersion = localStorage.getItem(VERSION_KEY);
+        if (storedVersion !== CURRENT_VERSION) {
+            localStorage.setItem('cbs_blog_posts', JSON.stringify(defaultBlogs));
+            localStorage.setItem('cbs_events_posts', JSON.stringify(defaultEvents));
+            localStorage.setItem('cbs_monthly_posts', JSON.stringify(defaultMonthly));
+            localStorage.setItem('cbs_maunakea_posts', JSON.stringify(defaultMaunakea));
+            localStorage.setItem('cbs_members_posts', JSON.stringify(defaultMembers));
+            localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+        } else {
+            if (!localStorage.getItem('cbs_blog_posts')) localStorage.setItem('cbs_blog_posts', JSON.stringify(defaultBlogs));
+            if (!localStorage.getItem('cbs_events_posts')) localStorage.setItem('cbs_events_posts', JSON.stringify(defaultEvents));
+            if (!localStorage.getItem('cbs_monthly_posts')) localStorage.setItem('cbs_monthly_posts', JSON.stringify(defaultMonthly));
+            if (!localStorage.getItem('cbs_maunakea_posts')) localStorage.setItem('cbs_maunakea_posts', JSON.stringify(defaultMaunakea));
+            if (!localStorage.getItem('cbs_members_posts')) localStorage.setItem('cbs_members_posts', JSON.stringify(defaultMembers));
+        }
+    }
+
+    // ピュアJSによるSHA-256代替処理（安全な加算処理対応・フォールバック用）
+    function jsSha256(s) {
+        var chrsz = 8;
+        var hexcase = 0;
+        function safe_add(x, y) {
+            var lsw = (x & 0xFFFF) + (y & 0xFFFF);
+            var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
+            return (msw << 16) | (lsw & 0xFFFF);
+        }
+        function S(X, n) { return (X >>> n) | (X << (32 - n)); }
+        function R(X, n) { return (X >>> n); }
+        function Ch(x, y, z) { return ((x & y) ^ ((~x) & z)); }
+        function Maj(x, y, z) { return ((x & y) ^ (x & z) ^ (y & z)); }
+        function Sigma0256(x) { return (S(x, 2) ^ S(x, 13) ^ S(x, 22)); }
+        function Sigma1256(x) { return (S(x, 6) ^ S(x, 11) ^ S(x, 25)); }
+        function gamma0256(x) { return (S(x, 7) ^ S(x, 18) ^ R(x, 3)); }
+        function gamma1256(x) { return (S(x, 17) ^ S(x, 19) ^ R(x, 10)); }
+        function core_sha256(m, l) {
+            var K = new Array(0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5, 0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5, 0xD807AA98, 0x12835B01, 0x243185BE, 0x550C7DC3, 0x72BE5D74, 0x80DEB1FE, 0x9BDEC06A, 0xC19BF174, 0xE49B69C1, 0xEFBE4786, 0x0FC19DC6, 0x240CA1CC, 0x2DE92C6F, 0x4A7484AA, 0x5CB0A9DC, 0x76F988DA, 0x983E5152, 0xA831C66D, 0xB00327C8, 0xBF597FC7, 0xC6E00BF3, 0xD5A79147, 0x06CA6351, 0x14292967, 0x27B70A85, 0x2E1B2138, 0x4D2C6DFC, 0x53380d13, 0x650A7354, 0x766a0ABB, 0x81C2C92E, 0x92722c85, 0xA2BFE8A1, 0xA81a664b, 0xC24b8b70, 0xC76c51a3, 0xD192e819, 0xD6990624, 0xF40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2);
+            var H = new Array(0x6A09E667, 0xBB67AE85, 0x3C6EF372, 0xA54FF53A, 0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19);
+            var w = new Array(64);
+            var a, b, c, d, e, f, g, h, i, j;
+            var T1, T2;
+            m[l >> 5] |= 0x80 << (24 - l % 32);
+            m[((l + 64 >> 9) << 4) + 15] = l;
+            for (i = 0; i < m.length; i += 16) {
+                a = H[0]; b = H[1]; c = H[2]; d = H[3]; e = H[4]; f = H[5]; g = H[6]; h = H[7];
+                for (j = 0; j < 64; j++) {
+                    if (j < 16) w[j] = m[j + i];
+                    else w[j] = safe_add(safe_add(safe_add(gamma1256(w[j - 2]), w[j - 7]), gamma0256(w[j - 15])), w[j - 16]);
+                    T1 = safe_add(safe_add(safe_add(safe_add(h, Sigma1256(e)), Ch(e, f, g)), K[j]), w[j]);
+                    T2 = safe_add(Sigma0256(a), Maj(a, b, c));
+                    h = g; g = f; f = e; e = safe_add(d, T1); d = c; c = b; b = a; a = safe_add(T1, T2);
+                }
+                H[0] = safe_add(a, H[0]); H[1] = safe_add(b, H[1]); H[2] = safe_add(c, H[2]); H[3] = safe_add(d, H[3]); H[4] = safe_add(e, H[4]); H[5] = safe_add(f, H[5]); H[6] = safe_add(g, H[6]); H[7] = safe_add(h, H[7]);
+            }
+            return H;
+        }
+        function str2binb(str) {
+            var bin = Array();
+            var mask = (1 << chrsz) - 1;
+            for (var i = 0; i < str.length * chrsz; i += chrsz) {
+                bin[i >> 5] |= (str.charCodeAt(i / chrsz) & mask) << (24 - i % 32);
+            }
+            return bin;
+        }
+        function binb2hex(binarray) {
+            var hex_tab = hexcase ? "0123456789ABCDEF" : "0123456789abcdef";
+            var str = "";
+            for (var i = 0; i < binarray.length * 4; i++) {
+                str += hex_tab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8 + 4)) & 0xF) + hex_tab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8)) & 0xF);
+            }
+            return str;
+        }
+        var utf8_str = unescape(encodeURIComponent(s));
+        return binb2hex(core_sha256(str2binb(utf8_str), utf8_str.length * chrsz));
+    }
+
+    // ハッシュ化用ヘルパー
+    async function sha256(message) {
+        if (typeof window !== "undefined" && window.crypto && window.crypto.subtle) {
+            try {
+                const msgBuffer = new TextEncoder().encode(message);
+                const hashBuffer = await window.crypto.subtle.digest('SHA-256', msgBuffer);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            } catch (e) {
+                console.warn("SubtleCrypto failed, falling back to pure JS hash.", e);
+            }
+        }
+        return jsSha256(message);
+    }
+
+// ログイン検証（ハッシュ化せず直接比較する形に修正）
+    function unlockAdmin(event) {
+        event.preventDefault();
     
-    // 【重要】以下の関数はオリジナルのadmin.htmlからそのままコピーして使用可能です。
-    // sha256, unlockAdmin, showAdmin, lockAdmin, saveApiSettings, loadApiSettings,
-    // pushDataToGithub, switchTab, resetForms, saveData, startEdit, cancelEdit, deleteItem, loadManageTable
-    // 上記関数は変更不要（ただしpushDataToGithub内の「ここにご自身の」チェックを残す）
+        // 入力された文字列を取得し、前後のスペースをトリム
+        const passInput = document.getElementById("admin-password").value.trim();
     
-    // 注意：上記関数群はオリジナルからコピーすることを前提とします。
-    // このサンプルでは簡略化のため、コアロジックの記載を省略しています。
-    // 実際にデプロイする際は、元のadmin.htmlの完全なスクリプトをそのまま使用し、
-    // バージョンチェック部分だけを削除してください。
+        // 正しい平文のパスワード
+        const correctPassword = "maxihete"; 
+
+        if (passInput === correctPassword) {
+            sessionStorage.setItem("admin_authenticated", "true");
+            showAdmin();
+        } else {
+            document.getElementById("admin-error").style.display = "block";
+        }
+    }
+
+    function showAdmin() {
+        document.getElementById("admin-lock-screen").style.display = "none";
+        document.getElementById("admin-main-content").style.display = "block";
+        loadApiSettings();
+        loadManageTable();
+        resetForms();
+    }
+
+    function lockAdmin() {
+        sessionStorage.removeItem("admin_authenticated");
+        location.reload();
+    }
+
+    // API設定の読み書きロジック
+    function saveApiSettings() {
+        const token = document.getElementById("api-token").value.trim();
+        const owner = document.getElementById("api-owner").value.trim();
+        const repo = document.getElementById("api-repo").value.trim();
+
+        localStorage.setItem("cbs_api_token", token);
+        localStorage.setItem("cbs_api_owner", owner);
+        localStorage.setItem("cbs_api_repo", repo);
+        alert("GitHub連携設定をローカルブラウザに保存しました。");
+    }
+
+    function loadApiSettings() {
+        const token = localStorage.getItem("cbs_api_token") || DEFAULT_API_TOKEN;
+        const owner = localStorage.getItem("cbs_api_owner") || DEFAULT_API_OWNER;
+        const repo = localStorage.getItem("cbs_api_repo") || DEFAULT_API_REPO;
+
+        document.getElementById("api-token").value = token;
+        document.getElementById("api-owner").value = owner;
+        document.getElementById("api-repo").value = repo;
+
+        if (token && token.indexOf("ここにご自身の") === -1) {
+            localStorage.setItem("cbs_api_token", token);
+            localStorage.setItem("cbs_api_owner", owner);
+            localStorage.setItem("cbs_api_repo", repo);
+        }
+    }
+
+    // data.jsonをGitHub APIで直接上書きアップデートする自動同期プログラム
+    async function pushDataToGithub(quiet = true) {
+        const token = localStorage.getItem("cbs_api_token") || DEFAULT_API_TOKEN;
+        const owner = localStorage.getItem("cbs_api_owner") || DEFAULT_API_OWNER;
+        const repo = localStorage.getItem("cbs_api_repo") || DEFAULT_API_REPO;
+
+        if (!token || !owner || !repo || token.indexOf("ここにご自身の") !== -1) {
+            if (!quiet) alert("GitHub連携用のAPI設定が未設定です。コード内を設定するか、管理フォームから接続設定を行ってください。");
+            return;
+        }
+
+        const statusSpan = document.getElementById("sync-status");
+        statusSpan.innerText = "🔄 クラウド同期中...";
+
+        const url = `https://api.github.com/repos/${owner}/${repo}/contents/data.json`;
+        let sha = null;
+        let serverData = {};
+
+        // 1. まず現在のサーバー上の data.json をフェッチして退避する
+        try {
+            const checkRes = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "Authorization": `token ${token}`,
+                    "Accept": "application/vnd.github.v3+json"
+                }
+            });
+            if (checkRes.status === 200) {
+                const checkData = await checkRes.json();
+                sha = checkData.sha;
+                
+                // TextDecoderを用いた安全なデコード（非推奨関数の代替）
+                const binaryString = atob(checkData.content.replace(/\s/g, ""));
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                const decodedStr = new TextDecoder("utf-8").decode(bytes);
+                serverData = JSON.parse(decodedStr);
+            }
+        } catch (e) {
+            console.warn("Could not fetch remote data.json for merging. Using local values.", e);
+        }
+
+        // 2. ローカルにデータが存在する場合のみ上書き。無いキーはサーバーのデータを維持
+        const localBlog = localStorage.getItem('cbs_blog_posts');
+        const localEvents = localStorage.getItem('cbs_events_posts');
+        const localMonthly = localStorage.getItem('cbs_monthly_posts');
+        const localMaunakea = localStorage.getItem('cbs_maunakea_posts');
+        const localMembers = localStorage.getItem('cbs_members_posts');
+        const localWiki = localStorage.getItem('cbs_wiki_content');
+        const localNotes = localStorage.getItem('cbs_wiki_notes');
+        const localHistory = localStorage.getItem('cbs_wiki_history');
+
+        const payload = {
+            blog: localBlog !== null ? JSON.parse(localBlog) : (serverData.blog || []),
+            events: localEvents !== null ? JSON.parse(localEvents) : (serverData.events || []),
+            monthly: localMonthly !== null ? JSON.parse(localMonthly) : (serverData.monthly || []),
+            maunakea: localMaunakea !== null ? JSON.parse(localMaunakea) : (serverData.maunakea || []),
+            members: localMembers !== null ? JSON.parse(localMembers) : (serverData.members || []),
+            wiki_content: localWiki !== null ? localWiki : (serverData.wiki_content || ""),
+            wiki_notes: localNotes !== null ? JSON.parse(localNotes) : (serverData.wiki_notes || {}),
+            wiki_history: localHistory !== null ? JSON.parse(localHistory) : (serverData.wiki_history || [])
+        };
+
+        // 安全なUTF-8対応のBase64エンコード処理
+        const jsonStr = JSON.stringify(payload, null, 2);
+        const uint8array = new TextEncoder().encode(jsonStr);
+        const binString = Array.from(uint8array, (byte) => String.fromCharCode(byte)).join("");
+        const contentBase64 = btoa(binString);
+
+        const bodyData = {
+            message: "Update database (data.json) via CbS Admin Console",
+            content: contentBase64
+        };
+        if (sha) bodyData.sha = sha;
+
+        try {
+            const putRes = await fetch(url, {
+                method: "PUT",
+                headers: {
+                    "Authorization": `token ${token}`,
+                    "Accept": "application/vnd.github.v3+json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(bodyData)
+            });
+
+            if (putRes.status === 200 || putRes.status === 201) {
+                statusSpan.innerText = "✅ クラウド同期完了！";
+                if (!quiet) alert("GitHub（data.json）との同期に成功しました。公開サイトへまもなく自動反映されます。");
+            } else {
+                const errData = await putRes.json();
+                statusSpan.innerText = "❌ クラウド同期失敗";
+                if (!quiet) alert("クラウド同期エラー: " + errData.message);
+            }
+        } catch (e) {
+            statusSpan.innerText = "❌ 通信エラー";
+            if (!quiet) alert("同期中のネットワーク通信エラー: " + e.message);
+        }
+    }
+
+    function switchTab(category) {
+        currentCategory = category;
+
+        document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+        document.querySelectorAll(".admin-panel").forEach(panel => panel.classList.remove("active"));
+
+        document.getElementById(`tab-${category}`).classList.add("active");
+        document.getElementById(`panel-${category}`).classList.add("active");
+
+        loadManageTable();
+    }
+
+    function resetForms() {
+        document.getElementById("edit-id").value = "";
+        
+        document.getElementById("add-blog-form").reset();
+        document.getElementById("add-events-form").reset();
+        document.getElementById("add-monthly-form").reset();
+        document.getElementById("add-maunakea-form").reset();
+        document.getElementById("add-members-form").reset();
+
+        document.getElementById("blog-form-title").innerText = "📝 新しいブログ日記を追加";
+        document.getElementById("blog-submit-btn").innerText = "ブログを発行・更新する";
+        document.getElementById("blog-cancel-btn").style.display = "none";
+
+        document.getElementById("events-form-title").innerText = "🌟 新しいイベント告知を追加";
+        document.getElementById("events-submit-btn").innerText = "イベント告知を発行する";
+        document.getElementById("events-cancel-btn").style.display = "none";
+
+        document.getElementById("monthly-form-title").innerText = "🌌 今月のすばるカードを追加";
+        document.getElementById("monthly-submit-btn").innerText = "解説カードを発行する";
+        document.getElementById("monthly-cancel-btn").style.display = "none";
+
+        document.getElementById("maunakea-form-title").innerText = "🌺 マウナケア便りの記事を追加";
+        document.getElementById("maunakea-submit-btn").innerText = "コラム記事を発行する";
+        document.getElementById("maunakea-cancel-btn").style.display = "none";
+
+        document.getElementById("members-form-title").innerText = "👥 新しいメンバーを追加";
+        document.getElementById("members-submit-btn").innerText = "新メンバーを登録する";
+        document.getElementById("members-cancel-btn").style.display = "none";
+
+        const today = new Date();
+        const dateString = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+        document.querySelectorAll(".auto-date").forEach(input => {
+            input.value = dateString;
+        });
+    }
+
+    function saveData(event, category) {
+        event.preventDefault();
+        const editId = document.getElementById("edit-id").value;
+        const storageKey = `cbs_${category}_posts`;
+
+        let list = [];
+        try {
+            const stored = localStorage.getItem(storageKey);
+            if (stored) list = JSON.parse(stored);
+        } catch (e) {
+            list = [];
+        }
+
+        let itemData = {};
+
+        if (editId) {
+            itemData = list.find(item => item.id === editId) || {};
+        } else {
+            itemData.id = "cbs_" + category + "_" + Date.now();
+        }
+
+        if (category === 'blog') {
+            itemData.title = document.getElementById("blog-title").value;
+            itemData.date = document.getElementById("blog-date").value;
+            itemData.summary = document.getElementById("blog-summary").value;
+            itemData.content = document.getElementById("blog-content").value; 
+        } else if (category === 'events') {
+            itemData.title = document.getElementById("event-title").value;
+            itemData.date = document.getElementById("event-date").value;
+            itemData.location = document.getElementById("event-location").value;
+            itemData.status = document.getElementById("event-status").value;
+            itemData.desc = document.getElementById("event-desc").value;
+            itemData.content = document.getElementById("event-content").value;
+        } else if (category === 'monthly') {
+            itemData.title = document.getElementById("monthly-title").value;
+            itemData.date = document.getElementById("monthly-date").value;
+            itemData.imgText = document.getElementById("monthly-img-text").value;
+            itemData.desc = document.getElementById("monthly-desc").value;
+            itemData.content = document.getElementById("monthly-content").value;
+        } else if (category === 'maunakea') {
+            itemData.vol = document.getElementById("mk-vol").value;
+            itemData.title = document.getElementById("mk-title").value;
+            itemData.imgText = document.getElementById("mk-img-text").value;
+            itemData.desc = document.getElementById("mk-desc").value;
+            itemData.content = document.getElementById("maunakea-content").value;
+        } else if (category === 'members') {
+            itemData.name = document.getElementById("mem-name").value;
+            itemData.role = document.getElementById("mem-role").value;
+            itemData.photo = document.getElementById("mem-photo").value;
+            itemData.comment = document.getElementById("mem-comment").value;
+            itemData.year = document.getElementById("mem-year").value;
+            itemData.category = document.getElementById("mem-category").value;
+        }
+
+        if (editId) {
+            list = list.map(item => item.id === editId ? itemData : item);
+            alert("コンテンツの変更内容を保存しました。");
+        } else {
+            if (category === 'members') {
+                list.push(itemData);
+            } else {
+                list.unshift(itemData);
+            }
+            alert("新しいコンテンツを正常に発行しました。");
+        }
+
+        localStorage.setItem(storageKey, JSON.stringify(list));
+        resetForms();
+        loadManageTable();
+
+        // バックグラウンドで自動クラウド上書き同期を掛けます
+        pushDataToGithub(true);
+    }
+
+    function startEdit(category, itemId) {
+        resetForms();
+        switchTab(category);
+
+        const storageKey = `cbs_${category}_posts`;
+        let list = [];
+        try {
+            const stored = localStorage.getItem(storageKey);
+            if (stored) list = JSON.parse(stored);
+        } catch (e) {
+            return;
+        }
+
+        const item = list.find(i => i.id === itemId);
+        if (!item) return;
+
+        document.getElementById("edit-id").value = item.id;
+
+        if (category === 'blog') {
+            document.getElementById("blog-title").value = item.title;
+            document.getElementById("blog-date").value = item.date;
+            document.getElementById("blog-summary").value = item.summary;
+            document.getElementById("blog-content").value = item.content || "";
+            
+            document.getElementById("blog-form-title").innerText = "📝 ブログ日記の編集・変更";
+            document.getElementById("blog-submit-btn").innerText = "変更を保存する";
+            document.getElementById("blog-cancel-btn").style.display = "inline-block";
+        } else if (category === 'events') {
+            document.getElementById("event-title").value = item.title;
+            document.getElementById("event-date").value = item.date;
+            document.getElementById("event-location").value = item.location;
+            document.getElementById("event-status").value = item.status;
+            document.getElementById("event-desc").value = item.desc;
+            document.getElementById("event-content").value = item.content || "";
+
+            document.getElementById("events-form-title").innerText = "🌟 イベント告知の編集・変更";
+            document.getElementById("events-submit-btn").innerText = "変更を保存する";
+            document.getElementById("events-cancel-btn").style.display = "inline-block";
+        } else if (category === 'monthly') {
+            document.getElementById("monthly-title").value = item.title;
+            document.getElementById("monthly-date").value = item.date;
+            document.getElementById("monthly-img-text").value = item.imgText;
+            document.getElementById("monthly-desc").value = item.desc;
+            document.getElementById("monthly-content").value = item.content || "";
+
+            document.getElementById("monthly-form-title").innerText = "🌌 今月のすばるカードの編集・変更";
+            document.getElementById("monthly-submit-btn").innerText = "変更を保存する";
+            document.getElementById("monthly-cancel-btn").style.display = "inline-block";
+        } else if (category === 'maunakea') {
+            document.getElementById("mk-vol").value = item.vol;
+            document.getElementById("mk-title").value = item.title;
+            document.getElementById("mk-img-text").value = item.imgText;
+            document.getElementById("mk-desc").value = item.desc;
+            document.getElementById("maunakea-content").value = item.content || "";
+
+            document.getElementById("maunakea-form-title").innerText = "🌺 マウナケア便りの編集・変更";
+            document.getElementById("maunakea-submit-btn").innerText = "変更を保存する";
+            document.getElementById("maunakea-cancel-btn").style.display = "inline-block";
+        } else if (category === 'members') {
+            document.getElementById("mem-name").value = item.name;
+            document.getElementById("mem-role").value = item.role;
+            document.getElementById("mem-photo").value = item.photo;
+            document.getElementById("mem-comment").value = item.comment || "";
+            document.getElementById("mem-year").value = item.year || "";
+            document.getElementById("mem-category").value = item.category || "";
+
+            document.getElementById("members-form-title").innerText = "👥 メンバー情報の編集・変更";
+            document.getElementById("members-submit-btn").innerText = "変更を保存する";
+            document.getElementById("members-cancel-btn").style.display = "inline-block";
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelEdit(category) {
+        resetForms();
+    }
+
+    function deleteItem(category, itemId) {
+        if (!confirm("本当にこのコンテンツを削除しますか？\n（※デフォルトデータを削除した後に初期状態に戻したい場合は、ブラウザキャッシュ/LocalStorageをリセットしてください）")) return;
+
+        const storageKey = `cbs_${category}_posts`;
+        let list = [];
+        try {
+            const stored = localStorage.getItem(storageKey);
+            if (stored) list = JSON.parse(stored);
+        } catch (e) {
+            list = [];
+        }
+
+        list = list.filter(item => item.id !== itemId);
+        localStorage.setItem(storageKey, JSON.stringify(list));
+        loadManageTable();
+        resetForms();
+
+        // 削除時もクラウド自動同期を掛けます
+        pushDataToGithub(true);
+    }
+
+    function loadManageTable() {
+        const tbody = document.querySelector("#posts-table tbody");
+        tbody.innerHTML = "";
+        
+        const categoryMap = {
+            'blog': { key: 'blog', label: 'ブログ' },
+            'events': { key: 'events', label: 'イベント告知' },
+            'monthly': { key: 'monthly', label: '今月のすばる' },
+            'maunakea': { key: 'maunakea', label: 'マウナケア便り' },
+            'members': { key: 'members', label: 'メンバー' }
+        };
+
+        const cat = categoryMap[currentCategory];
+        if (!cat) return;
+
+        document.getElementById("table-title").innerText = `🗂 投稿済み「${cat.label}」コンテンツの管理`;
+
+        const storageKey = `cbs_${cat.key}_posts`;
+        let list = [];
+        try {
+            const stored = localStorage.getItem(storageKey);
+            if (stored) list = JSON.parse(stored);
+        } catch (e) {
+            list = [];
+        }
+
+        if (list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#999; padding: 20px;">登録された${cat.label}のコンテンツはありません。</td></tr>`;
+            return;
+        }
+
+        list.forEach(item => {
+            const tr = document.createElement("tr");
+            let displayTitle = item.title || item.name || '';
+            let displayDate = item.date || item.vol || '';
+
+            tr.innerHTML = `
+                <td style="font-weight: bold; color: #1c2541;">${cat.label}</td>
+                <td>${displayDate}</td>
+                <td>${displayTitle}</td>
+                <td>
+                    <button class="btn-edit" onclick="startEdit('${cat.key}', '${item.id}')">編集</button>
+                    <button class="btn-danger" onclick="deleteItem('${cat.key}', '${item.id}')">削除</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // 他のタブでの更新に備えた自動同期
+    window.addEventListener('storage', function(e) {
+        if (e.key === VERSION_KEY) {
+            location.reload();
+        }
+    });
     </script>
 </body>
 </html>
