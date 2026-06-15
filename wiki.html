@@ -396,84 +396,6 @@
 
     <!-- Wiki動作ロジックスクリプト -->
     <script>
-    // ハッシュ化用ヘルパー関数（Web Crypto APIを使用）
-    async function sha256_webcrypto(message) {
-        const msgBuffer = new TextEncoder().encode(message);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    // ピュアJSによるSHA-256代替処理（安全な加算処理対応・フォールバック用）
-    function jsSha256(s) {
-        var chrsz = 8;
-        var hexcase = 0;
-        function safe_add(x, y) {
-            var lsw = (x & 0xFFFF) + (y & 0xFFFF);
-            var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
-            return (msw << 16) | (lsw & 0xFFFF);
-        }
-        function S(X, n) { return (X >>> n) | (X << (32 - n)); }
-        function R(X, n) { return (X >>> n); }
-        function Ch(x, y, z) { return ((x & y) ^ ((~x) & z)); }
-        function Maj(x, y, z) { return ((x & y) ^ (x & z) ^ (y & z)); }
-        function Sigma0256(x) { return (S(x, 2) ^ S(x, 13) ^ S(x, 22)); }
-        function Sigma1256(x) { return (S(x, 6) ^ S(x, 11) ^ S(x, 25)); }
-        function gamma0256(x) { return (S(x, 7) ^ S(x, 18) ^ R(x, 3)); }
-        function gamma1256(x) { return (S(x, 17) ^ S(x, 19) ^ R(x, 10)); }
-        function core_sha256(m, l) {
-            var K = new Array(0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5, 0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5, 0xD807AA98, 0x12835B01, 0x243185BE, 0x550C7DC3, 0x72BE5D74, 0x80DEB1FE, 0x9BDEC06A, 0xC19BF174, 0xE49B69C1, 0xEFBE4786, 0x0FC19DC6, 0x240CA1CC, 0x2DE92C6F, 0x4A7484AA, 0x5CB0A9DC, 0x76F988DA, 0x983E5152, 0xA831C66D, 0xB00327C8, 0xBF597FC7, 0xC6E00BF3, 0xD5A79147, 0x06CA6351, 0x14292967, 0x27B70A85, 0x2E1B2138, 0x4D2C6DFC, 0x53380d13, 0x650A7354, 0x766a0ABB, 0x81C2C92E, 0x92722c85, 0xA2BFE8A1, 0xA81a664b, 0xC24b8b70, 0xC76c51a3, 0xD192e819, 0xD6990624, 0xF40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2);
-            var H = new Array(0x6A09E667, 0xBB67AE85, 0x3C6EF372, 0xA54FF53A, 0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19);
-            var w = new Array(64);
-            var a, b, c, d, e, f, g, h, i, j;
-            var T1, T2;
-            m[l >> 5] |= 0x80 << (24 - l % 32);
-            m[((l + 64 >> 9) << 4) + 15] = l;
-            for (i = 0; i < m.length; i += 16) {
-                a = H[0]; b = H[1]; c = H[2]; d = H[3]; e = H[4]; f = H[5]; g = H[6]; h = H[7];
-                for (j = 0; j < 64; j++) {
-                    if (j < 16) w[j] = m[j + i];
-                    else w[j] = safe_add(safe_add(safe_add(gamma1256(w[j - 2]), w[j - 7]), gamma0256(w[j - 15])), w[j - 16]);
-                    T1 = safe_add(safe_add(safe_add(safe_add(h, Sigma1256(e)), Ch(e, f, g)), K[j]), w[j]);
-                    T2 = safe_add(Sigma0256(a), Maj(a, b, c));
-                    h = g; g = f; f = e; e = safe_add(d, T1); d = c; c = b; b = a; a = safe_add(T1, T2);
-                }
-                H[0] = safe_add(a, H[0]); H[1] = safe_add(b, H[1]); H[2] = safe_add(c, H[2]); H[3] = safe_add(d, H[3]); H[4] = safe_add(e, H[4]); H[5] = safe_add(f, H[5]); H[6] = safe_add(g, H[6]); H[7] = safe_add(h, H[7]);
-            }
-            return H;
-        }
-        function str2binb(str) {
-            var bin = Array();
-            var mask = (1 << chrsz) - 1;
-            for (var i = 0; i < str.length * chrsz; i += chrsz) {
-                bin[i >> 5] |= (str.charCodeAt(i / chrsz) & mask) << (24 - i % 32);
-            }
-            return bin;
-        }
-        function binb2hex(binarray) {
-            var hex_tab = hexcase ? "0123456789ABCDEF" : "0123456789abcdef";
-            var str = "";
-            for (var i = 0; i < binarray.length * 4; i++) {
-                str += hex_tab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8 + 4)) & 0xF) + hex_tab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8)) & 0xF);
-            }
-            return str;
-        }
-        var utf8_str = unescape(encodeURIComponent(s));
-        return binb2hex(core_sha256(str2binb(utf8_str), utf8_str.length * chrsz));
-    }
-
-    // ハッシュ化用ヘルパー（環境自動判別）
-    async function sha256(message) {
-        if (typeof window !== "undefined" && window.crypto && window.crypto.subtle) {
-            try {
-                return await sha256_webcrypto(message);
-            } catch (e) {
-                console.warn("SubtleCrypto failed, falling back to pure JS hash.", e);
-            }
-        }
-        return jsSha256(message);
-    }
-
     // XSS対策：HTMLタグのエスケープ処理
     function escapeHtml(str) {
         if (!str) return '';
@@ -859,7 +781,7 @@
         編集が完了したファイルを、サークルのWebサーバー上（<code>index.html</code>や<code>blog.html</code>と同じ同一階層、またはアップロード用の指定フォルダ）へ配置・アップロードします。</li>
         <li><strong>ステップ4：コンテンツ管理システム（admin.html）から紐付けを行う</strong><br>
         管理者用ログイン画面（<a href="admin.html" target="_blank">admin.html</a>）へ進み、管理パスワードを入力してログインします。上部タブの「📝 ブログ」を選択した状態で、以下の各入力項目を埋めます：<br>
-        ・<strong>記事タイトル</strong>：一覧に並ぶブログカードのタイトル（例：ハワイの夜空を見上げて）<br>
+        ・<strong>記事タイトル</strong>：一覧に並ぶブログカード of タイトル（例：ハワイの夜空を見上げて）<br>
         ・<strong>投稿日付</strong>：作成・公開時の日付（例：2026年5月22日）<br>
         ・<strong>概要/紹介文</strong>：一覧画面で記事の簡単な予告となる1〜2行程度の紹介用テキスト<br>
         ・<strong>詳細ページのURL / HTMLファイル名</strong>：ステップ3でサーバーにアップした自作のファイル名（例：<code>blog-shinchaku.html</code>、または外部に配置したURL）を入力します。</li>
@@ -980,7 +902,7 @@
         「編集」タブを開き、HTMLソースの一番最後（一番外側の閉じタグ <code>&lt;/div&gt;</code> の直前など）に、以下のように <code>data-menu-category</code>（大分類の見出し名）と <code>data-menu-title</code>（表示されるリンク名）を記述した <code>div</code> 構造を追加して保存します。<br>
         これだけで、左側のサイドメニュー（および新規ページ自体）が自動的に生成されて追加されます。
         <pre>&lt;div id="wiki-page-newsection" class="wiki-subpage" style="display: none;" data-menu-category="応用コラム" data-menu-title="新しい新ページ"&gt;
-    &lt;h1 class="wiki-article-title"&gt;新規作成したコンテンツ of タイトル&lt;/h1&gt;
+    &lt;h1 class="wiki-article-title"&gt;新規作成したコンテンツのタイトル&lt;/h1&gt;
     &lt;p&gt;ここに本文を書き込みます...&lt;/p>
 &lt;/div&gt;</pre>
         </li>
@@ -1064,16 +986,15 @@
         showWiki();
     }
 
-    // ログイン検証
-    async function unlockWiki(event) {
+    // ログイン検証（暗号化なし・直接平文比較）
+    function unlockWiki(event) {
         event.preventDefault();
         const passInput = document.getElementById("wiki-password").value.trim();
         
-        // 「subaru2026」のSHA-256ハッシュ値
-        const correctPasswordHash = "6377fc0b14ea9f268b8b0e77d70bc7066ae9781600869e5d4cb05c19ee8fa068"; 
-        const inputHash = await sha256(passInput);
+        // 「subaru2026」を直接比較
+        const correctPassword = "subaru2026"; 
 
-        if (inputHash === correctPasswordHash) {
+        if (passInput === correctPassword) {
             sessionStorage.setItem("wiki_authenticated", "true");
             showWiki();
         } else {
@@ -1758,15 +1679,14 @@
         }
     }
 
-    // 編集ロック解除
-    async function unlockEditor() {
+    // 編集ロック解除（暗号化なし・平文を直接比較）
+    function unlockEditor() {
         const pass = document.getElementById("edit-password").value.trim();
         
-        // 「swiftgo55」のSHA-256ハッシュ値
-        const correctEditPassHash = "1d5952fe212628469e34a6ee10ef7cf790faae88612ca49301988880d6bda450";
-        const inputHash = await sha256(pass);
+        // パスワードをそのまま直接比較します
+        const correctEditPass = "swiftgo55";
 
-        if (inputHash === correctEditPassHash) {
+        if (pass === correctEditPass) {
             sessionStorage.setItem("wiki_editor_authenticated", "true");
             document.getElementById("edit-error").style.display = "none";
             checkEditorAuth();
@@ -1814,15 +1734,14 @@
         }
     }
 
-    // アップローダーロック解除
-    async function unlockUploader() {
+    // アップローダーロック解除（暗号化なし・平文を直接比較）
+    function unlockUploader() {
         const pass = document.getElementById("uploader-password").value.trim();
         
-        // 「Onohiulapfs」のSHA-256ハッシュ値
-        const correctUploadPassHash = "c830953a7a93540952d7634db8449c2ae59e74bf0ef26cb91599a0397500be87";
-        const inputHash = await sha256(pass);
+        // パスワードをそのまま直接比較します
+        const correctUploadPass = "Onohiulapfs";
 
-        if (inputHash === correctUploadPassHash) {
+        if (pass === correctUploadPass) {
             sessionStorage.setItem("wiki_uploader_authenticated", "true");
             document.getElementById("uploader-error").style.display = "none";
             checkUploaderAuth();
